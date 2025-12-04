@@ -1,0 +1,943 @@
+:root {
+  --orange: #f57c00;
+  --orange-dark: #e65100;
+  --bg: #f4f4f4;
+  --card-bg: #ffffff;
+  --text-main: #222222;
+  --text-muted: #757575;
+  --border-soft: #e0e0e0;
+  --accent-low: #e8f5e9;
+  --accent-mid: #fff8e1;
+  --accent-high: #ffebee;
+  --danger: #d32f2f;
+  --radius-card: 14px;
+  --radius-pill: 999px;
+  --shadow-soft: 0 6px 18px rgba(0,0,0,0.08);
+  --header-height: 52px;
+  --tab-bar-height: 44px;
+}
+
+*, 
+*::before, 
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text-main);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Top bar */
+
+.top-bar {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+}
+
+.top-bar-left {
+  font-weight: 600;
+}
+
+.top-bar-right {
+  font-weight: 500;
+}
+
+@keyframes slow-blink {
+  0% { opacity: 1; }
+  40% { opacity: 0.25; }
+  80% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.top-bar-blink {
+  animation: slow-blink 2.8s ease-in-out infinite;
+}
+
+/* App shell */
+
+.app-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - var(--header-height));
+  padding: 6px 10px 10px;
+}
+
+/* Tabs */
+
+.tab-bar {
+  display: flex;
+  gap: 6px;
+  height: var(--tab-bar-height);
+  margin-bottom: 6px;
+}
+
+.tab-button {
+  flex: 1;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 6px 0;
+  font-weight: 700;
+}
+
+.tab-button.active {
+  background: var(--orange);
+  color: #fff;
+}
+
+.tab-content {
+  flex: 1;
+  display: none;
+}
+
+.tab-content.active {
+  display: flex;
+}
+
+/* Cards / layout */
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  padding: 10px 12px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.card.compact {
+  margin-top: 8px;
+  padding: 8px 10px;
+}
+
+.scroll-card {
+  max-height: calc(100% - 4px);
+  overflow: auto; /* allow vertical scrolling inside cards */
+}
+
+.scroll-card .list-section {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Calendario */
+
+#tab-calendario .card {
+  gap: 4px;
+  /* Limitar altura y permitir desplazamiento vertical dentro de la tarjeta de Calendario */
+  max-height: calc(100% - 20px);
+  overflow-y: auto;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 8px;
+  align-content: flex-start;
+  /* permitir desplazamiento en caso de contenido vertical extenso dentro de la rejilla */
+  overflow-y: auto;
+  max-height: calc(100vh - 220px); /* ajustable según layout */
+}
+
+/* Make activity description text in the Calendario section dark blue for better distinction */
+#calendar-list .list-sub {
+  color: #0b3d91;
+}
+
+/* Reduce font size for date fields that belong to activities inside the Calendario (only affect compact activity rows)
+   and make date inputs slightly wider and responsive so full dates can be seen on most screens. */
+#tab-calendario .list-item-compact .field-input {
+  font-size: 11px;
+  padding: 4px 6px;
+}
+
+/* Activity date inputs in Calendario: allow a responsive width that grows on larger screens but stays constrained on small viewports.
+   Use !important to gently override inline maxWidth set from JS so the CSS sizing is respected. */
+#tab-calendario .list-item-compact input[type="date"],
+#tab-calendario .list-item-compact .field-input[type="date"] {
+  width: clamp(110px, 20vw, 150px) !important;
+  box-sizing: border-box;
+}
+
+/* Nuevo: hacer que las filas de metadatos de actividad usen flex para repartir espacio y que los inputs de fecha se autoajusten */
+#tab-calendario .list-item-compact .list-meta-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Nuevo: inputs de fecha de actividades ocupan el espacio disponible y mantienen un mínimo razonable */
+#tab-calendario .list-item-compact .list-meta-row input[type="date"] {
+  flex: 1 1 0;
+  min-width: 130px;
+  width: auto !important;
+}
+
+/* Slightly increase the activity description/title text size inside the Calendario */
+#tab-calendario .list-item-compact .list-sub {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.calendar-column {
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.calendar-column-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.calendar-column-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calendar-date-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Gantt */
+
+.gantt-container {
+  margin-top: 6px;
+  padding: 8px 8px 6px;
+  border-radius: 10px;
+  background:
+    linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+    #fafafa;
+  background-size: 40px 100%;
+  border: 1px solid var(--border-soft);
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.gantt-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.gantt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.gantt-header-range {
+  font-weight: 500;
+}
+
+.gantt-header-span {
+  font-size: 10px;
+}
+
+.gantt-legend {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.gantt-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.gantt-legend-swatch {
+  width: 12px;
+  height: 4px;
+  border-radius: 999px;
+}
+
+.gantt-legend-swatch-stage {
+  background: var(--orange-dark);
+}
+
+.gantt-legend-swatch-activity {
+  background: #43a047;
+}
+
+.gantt-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.gantt-row + .gantt-row {
+  border-top: 1px solid rgba(0,0,0,0.03);
+  padding-top: 4px;
+}
+
+.gantt-label {
+  width: 40%;
+  font-size: 11px;
+  color: var(--text-main);
+}
+
+.gantt-bar-area {
+  flex: 1;
+  position: relative;
+  height: 22px;
+  border-radius: 999px;
+  background: #eeeeee;
+  overflow: hidden;
+}
+
+.gantt-bar {
+  position: absolute;
+  border-radius: 999px;
+}
+
+.gantt-bar-stage {
+  top: 2px;
+  height: 20px;
+  background: var(--orange-dark);
+}
+
+.gantt-bar-activity {
+  height: 8px;
+  background: #43a047;
+  opacity: 0.9;
+}
+
+.card-section + .card-section {
+  margin-top: 10px;
+}
+
+/* Fields */
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.field-input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  padding: 8px 10px;
+  font-size: 13px;
+  outline: none;
+  background: #fafafa;
+}
+
+.field-input:focus {
+  border-color: var(--orange);
+  background: #ffffff;
+}
+
+.field-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+/* Buttons */
+
+.btn-primary {
+  border: none;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--orange-dark);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.btn-chip {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  background: #eeeeee;
+  color: var(--text-muted);
+}
+
+/* Make the specific audit action buttons light orange with white text for prominence */
+#download-json,
+#load-sample,
+#load-json {
+  background: var(--orange);
+  color: #ffffff;
+  border: none;
+}
+
+/* Specific style for the "Actualizar Gantt" button in Calendario: light orange, white text */
+#update-gantt-btn {
+  background: var(--orange);
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+/* Keep padding / radius consistent with btn-chip */
+#download-json,
+#load-sample,
+#load-json {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+/* New: make 'Editar etapa' and 'Editar' buttons inside the Etapas list stand out:
+   light orange background with white text, consistent padding and no border. */
+#stages-list .btn-chip {
+  background: var(--orange);
+  color: #ffffff;
+  border: none;
+  padding: 6px 10px;
+  font-weight: 600;
+}
+
+/* New styles: make 'Editar roles' button light orange with white text */
+#manage-roles {
+  background: var(--orange);
+  color: #ffffff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+/* Change participant edit/delete icon colors to strong orange */
+#participants-list .icon-btn {
+  color: var(--orange-dark);
+}
+
+/* Make delete icon buttons inside Etapas (stages list) red */
+#stages-list .icon-btn {
+  color: var(--danger);
+}
+
+/* Lists */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list.sub-list {
+  margin-top: 4px;
+  padding-left: 0;
+}
+
+.list-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+
+.list-item-compact {
+  padding: 3px 0;
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.list-title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.list-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.list-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.badge-risk-bajo {
+  background: var(--accent-low);
+  color: #2e7d32;
+}
+
+.badge-risk-medio {
+  background: var(--accent-mid);
+  color: #ff8f00;
+}
+
+.badge-risk-alto {
+  background: var(--accent-high);
+  color: var(--danger);
+}
+
+.badge-role {
+  background: #eeeeee;
+  color: var(--text-muted);
+}
+
+/* Summary */
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pill {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  background: #eeeeee;
+  color: var(--text-muted);
+}
+
+.summary-row {
+  display: flex;
+  margin-top: 6px;
+  gap: 6px;
+}
+
+.summary-item {
+  flex: 1;
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+.summary-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.summary-value {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Divider */
+
+.divider {
+  height: 1px;
+  background: rgba(0,0,0,0.04);
+  margin: 6px -12px;
+}
+
+/* Small actions */
+
+.icon-btn {
+  border: none;
+  background: transparent;
+  padding: 3px 4px;
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+/* New: red danger button for destructive actions (used to delete stages) */
+.btn-danger {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--danger);
+  color: #ffffff;
+  cursor: pointer;
+}
+/* Ensure delete buttons inside stages list look consistent */
+#stages-list .btn-danger {
+  padding: 6px 10px;
+  font-size: 13px;
+  background: var(--danger);
+  color: #fff;
+  border: none;
+}
+
+/* Scrollbar minimal */
+
+.scroll-card .list-section::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scroll-card .list-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-card .list-section::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+  border-radius: 999px;
+}
+
+/* Modal genérico */
+
+.hidden {
+  display: none !important;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  width: 90%;
+  max-width: 360px;
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  padding: 14px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.modal-message {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.modal-input-wrapper {
+  margin-top: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Gantt */
+
+.gantt-container {
+  margin-top: 6px;
+  padding: 6px 6px;
+  border-radius: 10px;
+  background: #fafafa;
+  max-height: 160px;
+  overflow: hidden;
+}
+
+.gantt-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.gantt-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.gantt-label {
+  width: 35%;
+  font-size: 11px;
+  color: var(--text-main);
+}
+
+.gantt-bar-area {
+  flex: 1;
+  position: relative;
+  height: 18px;
+  border-radius: 999px;
+  background: #eeeeee;
+  overflow: hidden;
+}
+
+.gantt-bar {
+  position: absolute;
+  border-radius: 999px;
+}
+
+.gantt-bar-stage {
+  top: 2px;
+  height: 20px;
+  background: var(--orange-dark);
+}
+
+.gantt-bar-activity {
+  height: 8px;
+  background: #43a047;
+  opacity: 0.9;
+}
+
+/* New: participantes en 3 columnas con buen espaciado */
+#participants-list {
+  column-count: 3;
+  column-gap: 12px;
+  padding-left: 6px;
+  margin-top: 6px;
+}
+
+/* Asegurar que cada item se renderice como bloque evitando cortes */
+#participants-list .list-item {
+  display: inline-block; /* para funcionar con columnas */
+  width: 100%;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px;
+  margin: 0 0 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  border-bottom: none;
+}
+
+/* Ajustes internos para que el contenido fluya verticalmente */
+#participants-list .list-main {
+  gap: 4px;
+}
+
+#participants-list .badge-role {
+  font-size: 10px;
+  padding: 4px 8px;
+}
+
+/* Responsive: en pantallas muy pequeñas usar 1 columna, en medianas 2 */
+@media (max-width: 720px) {
+  #participants-list {
+    column-count: 1;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 980px) {
+  #participants-list {
+    column-count: 2;
+  }
+}
+
+/* New: etapas en 2 columns para mejor distribución visual */
+#stages-list {
+  /* Use a responsive grid for columns but keep the container width-contained */
+  display: grid;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  gap: 14px;
+  padding-left: 6px;
+  margin-top: 6px;
+  width: 100%;
+  box-sizing: border-box;
+
+  /* Allow vertical scrolling when there are many stages */
+  max-height: 320px; /* reasonable default; constrained to card area */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 6px; /* room for scrollbar */
+}
+
+/* Cada etapa como bloque en la columna evitando cortes, con buen padding y separación */
+#stages-list .list-item {
+  display: inline-block; /* necesario para flow con columnas CSS */
+  width: 100%;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 0 0 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  border-bottom: none;
+}
+
+/* Ajustes visuales internos para títulos, metas y listas de actividades */
+#stages-list .list-title {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+#stages-list .list-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+#stages-list .list-meta-row {
+  gap: 8px;
+  margin-top: 6px;
+  align-items: center;
+}
+
+/* Actividades dentro de cada etapa mejor espaciadas */
+#stages-list .sub-list {
+  margin-top: 8px;
+  padding-left: 14px;
+}
+
+#stages-list .list-item-compact {
+  padding: 6px 0;
+}
+
+/* Responsive: en pantallas pequeñas 1 columna, en medianas 2, en grandes 3 */
+@media (max-width: 720px) {
+  #stages-list {
+    grid-template-columns: 1fr;
+    width: 100%;
+    overflow-x: hidden;
+  }
+}
+@media (min-width: 721px) and (max-width: 1100px) {
+  #stages-list {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+@media (min-width: 1101px) {
+  #stages-list {
+    grid-template-columns: repeat(3, minmax(260px, 1fr));
+    overflow-x: hidden;
+    width: 100%;
+  }
+}
+
+/* ====== ADDED: Ajustes para la fila de nuevo participante ====== */
+/* Limitar ancho del select de roles para dejar más espacio a los botones */
+#participant-role {
+  flex: 0 0 220px;
+  max-width: 220px;
+  width: 220px;
+}
+
+/* Alineación y tamaño para los inputs Nombre + Correo en la misma fila */
+.tab-content#tab-participantes .participant-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Hacer que los dos inputs compartan espacio equitativamente */
+.tab-content#tab-participantes .participant-row .field-input {
+  flex: 1 1 0;
+  min-width: 0; /* evita overflow en contenedores pequeños */
+}
+
+/* Hacer que los botones a la derecha ocupen el espacio restante y tengan altura homogénea */
+.tab-content#tab-participantes .field-row > div {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+}
+
+/* Botones dentro de la fila de participante: que sean proporcionales y consistentes */
+/* Reduced size: smaller padding, slightly smaller font and height, tighter gap */
+.tab-content#tab-participantes .field-row > div > button#manage-roles,
+.tab-content#tab-participantes .field-row > div > button#add-participant {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  height: 36px;
+  font-size: 13px;
+}
+
+/* Preferencia visual: mantener 'Editar roles' en naranja y 'Agregar' en estilo primario */
+.tab-content#tab-participantes .field-row > div > button#manage-roles {
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  /* slightly tighter spacing so buttons don't look oversized */
+  margin-right: 4px;
+}
+.tab-content#tab-participantes .field-row > div > button#add-participant {
+  background: var(--orange-dark);
+  color: #fff;
+  border: none;
+}
+
+/* En pantallas pequeñas ajustar layout: select y botones apilen si es necesario */
+@media (max-width: 520px) {
+  #participant-role {
+    flex: 0 0 170px;
+    max-width: 170px;
+    width: 170px;
+  }
+  .tab-content#tab-participantes .field-row > div {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px; /* a bit more vertical breathing on small screens */
+  }
+  .tab-content#tab-participantes .field-row > div > button#manage-roles,
+  .tab-content#tab-participantes .field-row > div > button#add-participant {
+    height: 44px;
+    width: 100%;
+    padding: 10px 12px;
+  }
+}

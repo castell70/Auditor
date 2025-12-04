@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>AuditorMonitor</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+
+  <link rel="stylesheet" href="./styles.css" />
+
+  <script type="importmap">
+  {
+    "imports": {
+      "lit": "https://esm.sh/lit@3.1.0",
+      "jspdf": "https://esm.sh/jspdf@2.5.1",
+      "html2canvas": "https://esm.sh/html2canvas@1.4.1"
+    }
+  }
+  </script>
+  <script type="module" src="./main.js"></script>
+</head>
+<body>
+  <header class="top-bar">
+    <div class="top-bar-left">AuditorMonitor</div>
+    <div class="top-bar-right top-bar-blink">Powered by ITCPO</div>
+  </header>
+
+  <main class="app-shell">
+    <section class="tab-bar">
+      <button class="tab-button active" data-tab="auditoria">Auditoría</button>
+      <button class="tab-button" data-tab="participantes">Participantes</button>
+      <button class="tab-button" data-tab="etapas">Etapas</button>
+      <button class="tab-button" data-tab="calendario">Calendario</button>
+      <button class="tab-button" data-tab="diagrama">Diagrama</button>
+    </section>
+
+    <section class="tab-content active" id="tab-auditoria">
+      <div class="card">
+        <div class="card-section">
+          <label class="field-label">Código de auditoría</label>
+          <div class="field-row">
+            <input id="audit-code" class="field-input" type="text" placeholder="Ej. AUD-2025-01" />
+          </div>
+          <div class="field-row">
+            <select id="audit-selector" class="field-input">
+              <option value="">Nueva auditoría</option>
+            </select>
+            <button id="save-audit" class="btn-primary">Guardar / actualizar</button>
+          </div>
+        </div>
+
+        <div class="card-section">
+          <label class="field-label">Nombre de auditoría</label>
+          <input id="audit-name" class="field-input" type="text" placeholder="Ej. Auditoría financiera 2025" />
+        </div>
+        <div class="card-section">
+          <label class="field-label">Auditor líder</label>
+          <select id="lead-auditor" class="field-input"></select>
+        </div>
+
+        <div class="card-section">
+          <div class="field-row">
+            <button id="download-json" class="btn-chip">Descargar JSON</button>
+            <button id="load-sample" class="btn-chip">Cargar ejemplo</button>
+            <button id="load-json" class="btn-chip" title="Cargar datos desde archivo JSON">Cargar JSON</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card compact">
+        <div class="card-header-row">
+          <span class="card-title">Resumen</span>
+          <span class="pill" id="audit-status-pill">Borrador</span>
+        </div>
+        <div class="summary-row">
+          <div class="summary-item">
+            <span class="summary-label">Participantes</span>
+            <span class="summary-value" id="summary-participants">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Etapas</span>
+            <span class="summary-value" id="summary-stages">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Actividades</span>
+            <span class="summary-value" id="summary-tasks">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Días del proyecto</span>
+            <span class="summary-value" id="summary-days">0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-content" id="tab-participantes">
+      <div class="card scroll-card">
+        <div class="card-section">
+          <label class="field-label">Nuevo participante</label>
+          <div class="field-row participant-row">
+            <input id="participant-name" class="field-input" type="text" placeholder="Nombre" />
+            <input id="participant-email" class="field-input" type="email" placeholder="Correo (opcional)" />
+          </div>
+          <div class="field-row">
+            <div style="display:flex;gap:6px;align-items:center;width:100%;">
+              <select id="participant-role" class="field-input"></select>
+              <button id="manage-roles" class="btn-chip" title="Gestionar roles">Editar roles</button>
+              <button id="add-participant" class="btn-primary">Agregar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-section list-section">
+          <ul id="participants-list" class="list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-content" id="tab-etapas">
+      <div class="card scroll-card">
+        <div class="card-section">
+          <label class="field-label">Nueva etapa / documento</label>
+          <div class="field-row">
+            <input id="stage-name" class="field-input" type="text" placeholder="Nombre del documento / etapa" />
+          </div>
+          <div class="field-row">
+            <select id="stage-risk" class="field-input">
+              <option value="bajo">Riesgo bajo</option>
+              <option value="medio">Riesgo medio</option>
+              <option value="alto">Riesgo alto</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <input
+              id="stage-files"
+              class="field-input"
+              type="file"
+              multiple
+              accept=".doc,.docx,.pdf,.xls,.xlsx"
+            />
+            <button id="add-stage" class="btn-primary">Agregar</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-section list-section">
+          <ul id="stages-list" class="list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-content" id="tab-calendario">
+      <div class="card scroll-card">
+        <div class="card-section">
+          <div class="card-header-row">
+            <span class="card-title">Programación por etapas</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="card-section list-section">
+          <ul id="calendar-list" class="list calendar-grid"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-content" id="tab-diagrama">
+      <div class="card scroll-card">
+        <div class="card-section">
+          <div class="card-header-row">
+            <span class="card-title">Diagrama de Gantt</span>
+            <button id="gantt-pdf-btn" class="btn-chip" title="Descargar informe completo en PDF">Descargar Informe en PDF</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="card-section">
+          <div id="gantt-container" class="gantt-container"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal genérico para mensajes y captura de texto -->
+  <div id="app-modal-backdrop" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-message" id="modal-message"></div>
+      <div class="modal-input-wrapper hidden" id="modal-input-wrapper">
+        <input id="modal-input" class="field-input" type="text" />
+      </div>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn-chip">Cancelar</button>
+        <button id="modal-ok" class="btn-primary">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
