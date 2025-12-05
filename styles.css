@@ -133,10 +133,8 @@ body {
 }
 
 .scroll-card {
-  flex: 1;
-  min-height: 0;
   max-height: calc(100% - 4px);
-  overflow-y: auto;
+  overflow: auto; /* allow vertical scrolling inside cards */
 }
 
 .scroll-card .list-section {
@@ -959,182 +957,177 @@ body {
   }
 }
 
-/* Help button - smaller size */
-.tab-button-help {
-  flex: 0 0 auto !important;
-  padding: 4px 6px !important;
-  font-size: 11px !important;
-  min-width: 28px;
+/* Help Tab Button Styles */
+.help-tab-button {
+  background: var(--orange) !important;
+  color: #fff !important;
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 700;
+  flex: 0 0 auto;
+  padding: 6px 10px;
+}
+
+.help-tab-button:hover {
+  opacity: 0.9;
+}
+
+/* Help Modal Styles */
+.help-modal {
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.help-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px;
+  background: var(--orange);
+  color: #ffffff;
+  flex-shrink: 0;
+  border-bottom: 2px solid var(--orange-dark);
+}
+
+.help-modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.help-close-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s ease;
 }
 
-/* Help section layout with fixed TOC on left */
-.help-card {
-  padding: 0 !important;
-  display: flex;
+.help-close-btn:hover {
+  transform: rotate(90deg);
 }
 
-.help-container {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  gap: 0;
-}
-
-.help-toc-fixed {
-  flex: 0 0 120px;
-  background: #fffbf0;
-  border-right: 2px solid var(--orange);
-  padding: 10px 8px;
-  overflow-y: auto;
-  box-sizing: border-box;
-}
-
-.help-toc-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--orange-dark);
-  margin-bottom: 8px;
-}
-
-.help-toc-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.help-toc-list li {
-  padding: 0;
-}
-
-.help-toc-link {
-  color: var(--orange-dark);
-  text-decoration: none;
-  font-size: 11px;
-  font-weight: 500;
-  display: block;
-  padding: 4px 6px;
-  border-radius: 5px;
-  transition: background 0.15s;
-  word-wrap: break-word;
-  cursor: pointer;
-}
-
-.help-toc-link:hover {
-  background: rgba(245, 124, 0, 0.15);
-}
-
-.help-toc-link.active {
-  background: rgba(245, 124, 0, 0.25);
-  font-weight: 600;
-}
-
-.help-content {
+.help-modal-content {
   flex: 1;
-  padding: 10px 12px;
   overflow-y: auto;
-  min-width: 0;
-}
-
-/* Help sections - only show active */
-.help-section {
-  display: none;
-}
-
-.help-section.active {
-  display: block;
-}
-
-/* Help section improvements */
-.help-toc {
-  margin-bottom: 12px;
-  background: #fffbf0;
-  border-radius: 10px;
-  padding: 8px;
-  border-left: 4px solid var(--orange);
-}
-
-.help-toc-toggle {
-  width: 100%;
-  border: none;
-  background: transparent;
-  color: var(--text-main);
+  padding: 20px;
   font-size: 13px;
-  font-weight: 600;
-  padding: 8px 4px;
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  line-height: 1.6;
+  color: var(--text-main);
 }
 
-.help-toc-toggle:hover {
+.help-section {
+  margin-bottom: 18px;
+}
+
+.help-section h3 {
+  font-size: 14px;
+  font-weight: 700;
   color: var(--orange);
+  margin: 12px 0 8px 0;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--border-soft);
 }
 
-.help-toc-list {
-  list-style: none;
-  margin: 8px 0 0 0;
-  padding: 8px 0 0 0;
-  border-top: 1px solid rgba(245, 124, 0, 0.2);
+.help-section p {
+  margin: 8px 0;
+  color: var(--text-main);
 }
 
-.help-toc-list.hidden {
-  display: none;
-}
-
-.help-toc-list li {
-  padding: 6px 0;
-}
-
-.help-toc-link {
-  color: var(--orange-dark);
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 500;
-  display: block;
-  padding: 4px 8px;
+.help-subsection {
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: #f9f9f9;
+  border-left: 3px solid var(--orange);
   border-radius: 6px;
-  transition: background 0.2s;
 }
 
-.help-toc-link:hover {
-  background: rgba(245, 124, 0, 0.1);
+.help-subsection strong {
+  color: var(--orange-dark);
 }
 
-/* Improved scrollbar visibility */
-.scroll-card::-webkit-scrollbar {
-  width: 8px;
+.help-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 8px 0;
 }
 
-.scroll-card::-webkit-scrollbar-track {
-  background: #f5f5f5;
+.help-list li {
+  padding: 6px 0 6px 24px;
+  position: relative;
+  margin: 4px 0;
+}
+
+.help-list li:before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.help-ordered-list {
+  list-style: decimal;
+  padding-left: 24px;
+  margin: 8px 0;
+}
+
+.help-ordered-list li {
+  padding: 6px 0;
+  margin: 4px 0;
+}
+
+.help-footer {
+  border-top: 2px solid var(--border-soft);
+  text-align: center;
+  padding-top: 16px;
+  margin-top: 24px;
+}
+
+.help-copyright {
+  font-weight: 600;
+  color: var(--orange-dark);
+  margin: 6px 0;
+  font-size: 12px;
+}
+
+.help-copyright-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 4px 0 0 0;
+  font-style: italic;
+}
+
+/* Scrollbar styling for help modal */
+.help-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.help-modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.help-modal-content::-webkit-scrollbar-thumb {
+  background: rgba(245, 124, 0, 0.3);
   border-radius: 999px;
 }
 
-.scroll-card::-webkit-scrollbar-thumb {
-  background: #bbb;
-  border-radius: 999px;
-}
-
-.scroll-card::-webkit-scrollbar-thumb:hover {
-  background: var(--orange);
-}
-
-/* Firefox scrollbar */
-.scroll-card {
-  scrollbar-width: thin;
-  scrollbar-color: #bbb #f5f5f5;
-}
-
-/* Smooth scroll behavior */
-html {
-  scroll-behavior: smooth;
+.help-modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 124, 0, 0.5);
 }

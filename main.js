@@ -468,13 +468,23 @@ function setupAuditBinding() {
   if (resetBtn) {
     resetBtn.addEventListener("click", async () => {
       const confirmed = await openConfirmDialog({
-        title: "Actualizar página",
-        message: "¿Está seguro de que desea actualizar la página? Se recargará el navegador."
+        title: "Reiniciar aplicación",
+        message: "¿Está seguro de que desea reiniciar la aplicación? Se eliminarán TODOS los datos y no se podrá deshacer esta acción."
       });
       if (!confirmed) return;
 
-      // Reload page
-      location.reload();
+      // Clear state
+      state.audits = {};
+      state.currentAuditCode = "";
+
+      // Reset to default
+      const defaultCode = "AUD-001";
+      setCurrentAuditCode(defaultCode);
+
+      // Reload UI
+      loadAuditIntoUI();
+      updateAuditSelector();
+      renderAll();
     });
   }
 
@@ -1863,69 +1873,4 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
-
-// Setup help TOC toggle
-window.addEventListener("DOMContentLoaded", () => {
-  const tocToggle = document.querySelector(".help-toc-toggle");
-  const tocList = document.querySelector(".help-toc-list");
-  const tocLinks = document.querySelectorAll(".help-toc-link");
-
-  if (tocToggle && tocList) {
-    tocToggle.addEventListener("click", () => {
-      tocList.classList.toggle("hidden");
-    });
-
-    tocLinks.forEach(link => {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        const target = link.getAttribute("href");
-        const el = document.querySelector(target);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
-          // Close TOC after selection
-          tocList.classList.add("hidden");
-        }
-      });
-    });
-  }
-});
-
-// Setup help sections to show only selected topic
-window.addEventListener("DOMContentLoaded", () => {
-  const tocLinks = document.querySelectorAll(".help-toc-link");
-  const helpSections = document.querySelectorAll(".help-section");
-
-  // Set first topic as active by default
-  if (helpSections.length > 0) {
-    helpSections[0].classList.add("active");
-    if (tocLinks.length > 0) {
-      tocLinks[0].classList.add("active");
-    }
-  }
-
-  tocLinks.forEach(link => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      const topicId = link.getAttribute("data-topic");
-      if (!topicId) return;
-
-      // Remove active class from all sections and links
-      helpSections.forEach(section => section.classList.remove("active"));
-      tocLinks.forEach(l => l.classList.remove("active"));
-
-      // Add active class to selected section and link
-      const targetSection = document.getElementById(topicId);
-      if (targetSection) {
-        targetSection.classList.add("active");
-        link.classList.add("active");
-        
-        // Reset scroll to top for new section
-        const helpContent = document.querySelector(".help-content");
-        if (helpContent) {
-          helpContent.scrollTop = 0;
-        }
-      }
-    });
-  });
 });

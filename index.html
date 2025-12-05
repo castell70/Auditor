@@ -31,7 +31,7 @@
       <button class="tab-button" data-tab="etapas">Etapas</button>
       <button class="tab-button" data-tab="calendario">Calendario</button>
       <button class="tab-button" data-tab="diagrama">Diagrama</button>
-      <button id="help-button" class="tab-button tab-button-help" data-tab="ayuda" title="Ayuda">?</button>
+      <button id="help-button" class="tab-button help-tab-button" title="Ayuda">?</button>
     </section>
 
     <section class="tab-content active" id="tab-auditoria">
@@ -181,334 +181,9 @@
         </div>
       </div>
     </section>
-
-    <section class="tab-content" id="tab-ayuda">
-      <div class="card scroll-card help-card">
-        <div class="help-container">
-          <!-- Índice fijo a la izquierda -->
-          <div class="help-toc-fixed">
-            <div class="help-toc-title">📋 Temas</div>
-            <ul class="help-toc-list">
-              <li><a href="javascript:void(0)" data-topic="help-about" class="help-toc-link">¿Qué es?</a></li>
-              <li><a href="javascript:void(0)" data-topic="help-auditoria" class="help-toc-link">📋 Auditoría</a></li>
-              <li><a href="javascript:void(0)" data-topic="help-participantes" class="help-toc-link">👥 Participantes</a></li>
-              <li><a href="javascript:void(0)" data-topic="help-etapas" class="help-toc-link">📄 Etapas</a></li>
-              <li><a href="javascript:void(0)" data-topic="help-calendario" class="help-toc-link">📅 Calendario</a></li>
-              <li><a href="javascript:void(0)" data-topic="help-diagrama" class="help-toc-link">📊 Diagrama</a></li>
-              <li><a href="javascript:void(0)" data-topic="help-example" class="help-toc-link">Ejemplo</a></li>
-              <li><a href="javascript:void(0)" data-topic="help-tips" class="help-toc-link">Consejos</a></li>
-            </ul>
-          </div>
-          
-          <!-- Contenido scrollable a la derecha -->
-          <div class="help-content">
-            <!-- ¿Qué es? -->
-            <div class="help-section active" id="help-about">
-              <h2 style="margin: 0 0 12px 0; color: var(--orange); font-size: 16px;">AuditorMonitor</h2>
-              <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.5;">AuditorMonitor es una plataforma integral diseñada para planificar, organizar, monitorear y documentar auditorías de forma eficiente. Permite a los equipos de auditoría centralizar toda la información del proceso, desde la definición del alcance hasta la presentación de resultados.</p>
-              
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Características principales:</h4>
-              <ul style="margin: 0; padding-left: 16px; font-size: 11px; line-height: 1.5;">
-                <li>Gestión centralizada de auditorías múltiples</li>
-                <li>Registro y seguimiento de participantes con roles definibles</li>
-                <li>Creación de etapas y actividades con clasificación de riesgos</li>
-                <li>Calendario interactivo para programación de fechas</li>
-                <li>Diagrama de Gantt visual para monitoreo del cronograma</li>
-                <li>Exportación de reportes en PDF con información completa</li>
-                <li>Importación/exportación de datos en formato JSON para respaldos</li>
-              </ul>
-            </div>
-
-            <!-- Sección Auditoría -->
-            <div class="help-section" id="help-auditoria">
-              <h2 style="margin: 0 0 12px 0; color: var(--orange); font-size: 15px;">📋 Auditoría</h2>
-              <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.5;">Esta es la sección principal donde defines los parámetros generales de la auditoría. Aquí estableces la identidad de tu auditoría, asignas el liderazgo y gestionas múltiples auditorías simultáneamente.</p>
-              
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Campos principales:</h4>
-              
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Código de auditoría</p>
-                  <p style="margin: 0; color: var(--text-muted);">Identificador único de la auditoría. Ej: AUD-2025-01, AUD-FINANCIERA-Q1. Se recomienda usar un formato consistente para facilitar búsquedas y referencias.</p>
-                </div>
-                
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Nombre de auditoría</p>
-                  <p style="margin: 0; color: var(--text-muted);">Descripción completa de la auditoría. Ej: "Auditoría integral de procesos financieros 2025". Proporciona contexto sobre el alcance y objetivo.</p>
-                </div>
-                
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Auditor líder</p>
-                  <p style="margin: 0; color: var(--text-muted);">Profesional responsable de la dirección general de la auditoría. Se selecciona de la lista de participantes registrados. Solo auditorores e "Auditores líderes" pueden ser asignados a este rol.</p>
-                </div>
-              </div>
-
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Acciones disponibles:</h4>
-              <ul style="margin: 0; padding-left: 16px; font-size: 11px; line-height: 1.5;">
-                <li><strong>Guardar / actualizar:</strong> Consolida los cambios realizados en la auditoría actual. Usa esta opción cuando modifiques el código.</li>
-                <li><strong>Descargar JSON:</strong> Exporta toda la información (auditorías, participantes, etapas, actividades) en formato JSON para respaldos.</li>
-                <li><strong>Cargar ejemplo:</strong> Carga una auditoría de muestra con datos completos para explorar todas las funcionalidades.</li>
-                <li><strong>Cargar JSON:</strong> Importa datos de auditorías previas desde un archivo JSON descargado anteriormente.</li>
-                <li><strong>Reiniciar:</strong> Recarga la aplicación eliminando todos los datos actuales (confirma antes de ejecutar).</li>
-              </ul>
-
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Resumen:</h4>
-              <p style="margin: 0 0 8px 0; font-size: 11px; line-height: 1.5;">Muestra un resumen dinámico con el conteo de participantes, etapas, actividades y días del proyecto. Se actualiza automáticamente al agregar o modificar información.</p>
-            </div>
-
-            <!-- Sección Participantes -->
-            <div class="help-section" id="help-participantes">
-              <h2 style="margin: 0 0 12px 0; color: var(--orange); font-size: 15px;">👥 Participantes</h2>
-              <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.5;">Registra y gestiona a todos los profesionales involucrados en la auditoría. Define sus roles y responsabilidades para una coordinación clara del equipo.</p>
-              
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Información del participante:</h4>
-              
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Nombre</p>
-                  <p style="margin: 0; color: var(--text-muted);">Nombre completo del participante (requerido). Ej: "Ana María Torres Gómez".</p>
-                </div>
-                
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Correo electrónico</p>
-                  <p style="margin: 0; color: var(--text-muted);">Correo del participante (opcional). Facilita la comunicación y documentación de contactos.</p>
-                </div>
-                
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Rol</p>
-                  <p style="margin: 0; color: var(--text-muted);">Define la función del participante en la auditoría (Auditor líder, Auditor, Responsable de proceso, Observador). Los roles pueden personalizarse en "Editar roles".</p>
-                </div>
-              </div>
-
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Descripción de roles estándar:</h4>
-              <ul style="margin: 0; padding-left: 16px; font-size: 11px; line-height: 1.5;">
-                <li><strong>Auditor líder:</strong> Dirige la auditoría y es responsable de resultados finales.</li>
-                <li><strong>Auditor:</strong> Ejecuta procedimientos de auditoría bajo supervisión del líder.</li>
-                <li><strong>Responsable de proceso:</strong> Representa al área auditada, facilita información y control.</li>
-                <li><strong>Observador:</strong> Participa en reuniones pero sin responsabilidad directa en ejecución.</li>
-              </ul>
-
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Operaciones disponibles:</h4>
-              <ul style="margin: 0; padding-left: 16px; font-size: 11px; line-height: 1.5;">
-                <li><strong>Editar roles:</strong> Personaliza la lista de roles disponibles (modificar etiquetas, agregar nuevos).</li>
-                <li><strong>Editar (ícono lápiz):</strong> Modifica nombre, correo o rol de un participante existente.</li>
-                <li><strong>Eliminar (ícono basurero):</strong> Remueve un participante de la auditoría.</li>
-              </ul>
-            </div>
-
-            <!-- Sección Etapas -->
-            <div class="help-section" id="help-etapas">
-              <h2 style="margin: 0 0 12px 0; color: var(--orange); font-size: 15px;">📄 Etapas</h2>
-              <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.5;">Define las fases principales de la auditoría. Cada etapa agrupa actividades relacionadas, documentos y riesgos asociados. Facilita la organización y seguimiento de la auditoría.</p>
-              
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Componentes de una etapa:</h4>
-              
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Nombre de etapa</p>
-                  <p style="margin: 0; color: var(--text-muted);">Descripción clara de la fase. Ej: "Revisión de documentación financiera", "Pruebas de control interno", "Informe y cierre".</p>
-                </div>
-                
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Nivel de riesgo</p>
-                  <p style="margin: 0; color: var(--text-muted);"><strong>Bajo:</strong> Procesos estables con controles maduros. <strong>Medio:</strong> Procesos con algunos riesgos a monitorear. <strong>Alto:</strong> Procesos con riesgos significativos o cambios importantes.</p>
-                </div>
-                
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Fechas (inicio y fin)</p>
-                  <p style="margin: 0; color: var(--text-muted);">Período programado para la ejecución de la etapa. Estas fechas se reflejan en el diagrama de Gantt para visualizar la cronología general.</p>
-                </div>
-                
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Adjuntos</p>
-                  <p style="margin: 0; color: var(--text-muted);">Documentos asociados (PDF, Excel, Word, etc.). Se registran los nombres de los archivos para referencia rápida durante la auditoría.</p>
-                </div>
-              </div>
-
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Actividades dentro de etapas:</h4>
-              <p style="margin: 0 0 8px 0; font-size: 11px; line-height: 1.5;">Cada etapa puede contener múltiples actividades (tareas específicas). Las actividades heredan el contexto de la etapa padre y pueden tener fechas propias más detalladas.</p>
-              
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Operaciones disponibles:</h4>
-              <ul style="margin: 0; padding-left: 16px; font-size: 11px; line-height: 1.5;">
-                <li><strong>Editar etapa:</strong> Modifica nombre, riesgo o fechas de la etapa principal.</li>
-                <li><strong>Eliminar etapa:</strong> Remueve la etapa y todas sus actividades (confirma esta acción).</li>
-                <li><strong>Agregar actividad:</strong> Crea una nueva tarea dentro de la etapa con su propia cronología.</li>
-                <li><strong>Editar actividad (ícono lápiz):</strong> Modifica nombre, fechas o descripción de la actividad.</li>
-                <li><strong>Eliminar actividad (ícono basurero):</strong> Remueve la actividad de la etapa.</li>
-              </ul>
-            </div>
-
-            <!-- Sección Calendario -->
-            <div class="help-section" id="help-calendario">
-              <h2 style="margin: 0 0 12px 0; color: var(--orange); font-size: 15px;">📅 Calendario</h2>
-              <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.5;">Visualiza y programa las fechas de todas tus etapas y actividades en un formato de columnas. Facilita la asignación de cronogramas y evita conflictos de fechas.</p>
-              
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Cómo usar el Calendario:</h4>
-              
-              <div style="background: #fffbf0; border-left: 3px solid var(--orange); padding: 10px; border-radius: 6px; font-size: 11px; margin-bottom: 10px; line-height: 1.5;">
-                <p style="margin: 0 0 6px 0; font-weight: 600;">Estructura por columnas</p>
-                <p style="margin: 0; color: var(--text-muted);">Cada columna representa una etapa. Dentro de cada columna, encuentras campos para asignar fecha de inicio y fin de la etapa, seguidos por las actividades relacionadas con sus propias fechas.</p>
-              </div>
-
-              <div style="background: #fffbf0; border-left: 3px solid var(--orange); padding: 10px; border-radius: 6px; font-size: 11px; margin-bottom: 10px; line-height: 1.5;">
-                <p style="margin: 0 0 6px 0; font-weight: 600;">Ingresar fechas</p>
-                <p style="margin: 0; color: var(--text-muted);">Haz clic en los campos de fecha (inicio/fin) para abrir un selector de calendario. Selecciona el rango que corresponda a tu plan de auditoría. Los cambios se guardan automáticamente.</p>
-              </div>
-
-              <div style="background: #fffbf0; border-left: 3px solid var(--orange); padding: 10px; border-radius: 6px; font-size: 11px; margin-bottom: 10px; line-height: 1.5;">
-                <p style="margin: 0 0 6px 0; font-weight: 600;">Sincronización con otras vistas</p>
-                <p style="margin: 0; color: var(--text-muted);">Las fechas ingresadas en el Calendario se sincronizan automáticamente con la sección Etapas y se reflejan en el diagrama de Gantt en tiempo real.</p>
-              </div>
-
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Consejos:</h4>
-              <ul style="margin: 0; padding-left: 16px; font-size: 11px; line-height: 1.5;">
-                <li>Programa etapas en secuencia lógica respetando dependencias.</li>
-                <li>Asigna actividades dentro de ventanas de tiempo realistas.</li>
-                <li>Incluye buffer de tiempo entre etapas para revisiones y ajustes.</li>
-                <li>Actualiza fechas regularmente si el cronograma cambia.</li>
-              </ul>
-            </div>
-
-            <!-- Sección Diagrama -->
-            <div class="help-section" id="help-diagrama">
-              <h2 style="margin: 0 0 12px 0; color: var(--orange); font-size: 15px;">📊 Diagrama (Gantt)</h2>
-              <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.5;">Visualiza gráficamente la cronología completa de la auditoría mediante un diagrama de Gantt. Muestra la duración de etapas y actividades, facilitando el seguimiento del avance y la identificación de solapamientos.</p>
-              
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Componentes y lectura:</h4>
-              
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Componentes del diagrama</p>
-                  <p style="margin: 0 0 6px 0; color: var(--text-muted);"><strong>Barras de etapas (naranja oscuro):</strong> Representan la duración completa de cada etapa desde su fecha de inicio hasta su fecha de fin.</p>
-                  <p style="margin: 0; color: var(--text-muted);"><strong>Barras de actividades (verde):</strong> Representan tareas específicas dentro de etapas. Son más finas que las etapas y se superponen dentro del tiempo de la etapa padre.</p>
-                </div>
-
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Lectura del diagrama</p>
-                  <ul style="margin: 0; padding-left: 12px; font-size: 11px; line-height: 1.5;">
-                    <li><strong>Eje horizontal:</strong> Línea de tiempo (días del proyecto).</li>
-                    <li><strong>Eje vertical:</strong> Listado de etapas y sus actividades.</li>
-                    <li><strong>Largo de barra:</strong> Indica la duración de la etapa o actividad.</li>
-                    <li><strong>Posición:</strong> Indica el momento de inicio del elemento.</li>
-                  </ul>
-                </div>
-
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Interpretación de patrones</p>
-                  <ul style="margin: 0; padding-left: 12px; font-size: 11px; line-height: 1.5;">
-                    <li><strong>Barras solapadas:</strong> Actividades simultáneas (recursos paralelos).</li>
-                    <li><strong>Barras secuenciales:</strong> Actividades en orden (dependencia clara).</li>
-                    <li><strong>Espacios vacíos:</strong> Períodos sin actividades (pueden ser deliberados).</li>
-                  </ul>
-                </div>
-              </div>
-
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Exportar a PDF:</h4>
-              <p style="margin: 0 0 8px 0; font-size: 11px; line-height: 1.5;">El botón "Descargar Informe en PDF" genera un documento completo que incluye datos generales, listado de participantes, definición de etapas y el diagrama de Gantt. Es útil para presentar a stakeholders o mantener registro formal de la planificación.</p>
-            </div>
-
-            <!-- Sección Ejemplo -->
-            <div class="help-section" id="help-example">
-              <h2 style="margin: 0 0 12px 0; color: var(--orange); font-size: 15px;">Ejemplo práctico</h2>
-              <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.5;">A continuación, un caso de uso completo que ilustra cómo utilizar todas las funcionalidades de AuditorMonitor de forma integrada.</p>
-              
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Escenario: Auditoría financiera integral 2025</h4>
-              
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
-                <div style="background: #fffbf0; border-left: 3px solid var(--orange); padding: 10px; border-radius: 6px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">1. Datos generales</p>
-                  <p style="margin: 0;"><strong>Código:</strong> AUD-2025-FIN-01<br/><strong>Nombre:</strong> Auditoría integral de procesos financieros y contables 2025<br/><strong>Auditor líder:</strong> Ana Torres</p>
-                </div>
-
-                <div style="background: #fffbf0; border-left: 3px solid var(--orange); padding: 10px; border-radius: 6px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">2. Equipo de participantes</p>
-                  <ul style="margin: 0; padding-left: 16px; font-size: 10px;">
-                    <li>Ana Torres (Auditor líder)</li>
-                    <li>Luis Pérez (Auditor)</li>
-                    <li>María Gómez (Responsable)</li>
-                    <li>Carlos Rivas (Responsable)</li>
-                    <li>Elena Núñez (Observadora)</li>
-                  </ul>
-                </div>
-
-                <div style="background: #fffbf0; border-left: 3px solid var(--orange); padding: 10px; border-radius: 6px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">3-5. Etapas, documentos y monitoreo</p>
-                  <p style="margin: 0 0 4px 0; font-size: 10px;"><strong>4 etapas:</strong> Planeación (bajo), Revisión documentos (alto), Pruebas (medio), Informe (medio)</p>
-                  <p style="margin: 0 0 4px 0; font-size: 10px;"><strong>Documentos:</strong> PDF, Excel, Word por etapa</p>
-                  <p style="margin: 0; font-size: 10px;"><strong>Monitoreo:</strong> Ajusta fechas en Calendario y descarga informe PDF cuando esté lista la planificación.</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Sección Consejos -->
-            <div class="help-section" id="help-tips">
-              <h2 style="margin: 0 0 12px 0; color: var(--orange); font-size: 15px;">Consejos y mejores prácticas</h2>
-              <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.5;">Recomendaciones para aprovechar al máximo AuditorMonitor y garantizar auditorías bien organizadas y documentadas.</p>
-              
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Gestión de datos:</h4>
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Respaldos regulares</p>
-                  <p style="margin: 0; color: var(--text-muted);">Descarga archivos JSON semanalmente para evitar pérdida de información.</p>
-                </div>
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Códigos descriptivos</p>
-                  <p style="margin: 0; color: var(--text-muted);">Usa formatos consistentes como AUD-AAAA-TIPO-NUM para fácil identificación.</p>
-                </div>
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Actualización constante</p>
-                  <p style="margin: 0; color: var(--text-muted);">Mantén fechas y participantes sincronizados con cambios reales en el proyecto.</p>
-                </div>
-              </div>
-
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Planificación</p>
-                  <ul style="margin: 0; padding-left: 16px;">
-                    <li><strong>Auditor líder:</strong> Asigna siempre un auditor líder claramente identificado antes de comenzar.</li>
-                    <li><strong>Roles claros:</strong> Define roles específicos para cada participante para evitar duplicidad.</li>
-                    <li><strong>Tiempo realista:</strong> No congestes el cronograma; incluye tiempo para revisiones y ajustes.</li>
-                    <li><strong>Riesgos identificados:</strong> Usa la clasificación de riesgos para priorizar etapas críticas.</li>
-                  </ul>
-                </div>
-
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Documentación</p>
-                  <ul style="margin: 0; padding-left: 16px;">
-                    <li><strong>Adjuntos organizados:</strong> Carga documentos relacionados a su etapa correspondiente para referencia rápida.</li>
-                    <li><strong>Descripciones en actividades:</strong> Agrega breves descripciones que aclaren el propósito de cada actividad.</li>
-                    <li><strong>Exporta PDF:</strong> Genera reportes PDF cuando la planificación sea aprobada como documento de control.</li>
-                  </ul>
-                </div>
-
-                <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
-                  <p style="margin: 0 0 6px 0; font-weight: 600;">Seguimiento</p>
-                  <ul style="margin: 0; padding-left: 16px;">
-                    <li><strong>Gantt como referencia:</strong> Revisa el diagrama regularmente para identificar desviaciones al cronograma.</li>
-                    <li><strong>Ajustes ágiles:</strong> Modifica fechas en el Calendario en tiempo real si emergen cambios.</li>
-                    <li><strong>Participantes informados:</strong> Mantén contacto de correos actualizados para comunicaciones efectivas.</li>
-                    <li><strong>Hitos importantes:</strong> Marca claramente las fechas de cierre de cada etapa para monitoreo.</li>
-                  </ul>
-                </div>
-              </div>
-
-              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Personalización de roles:</h4>
-              <p style="margin: 0 0 8px 0; font-size: 11px; line-height: 1.5;">Si los roles estándar no se ajustan a tu estructura organizacional, usa "Editar roles" en Participantes para crear roles personalizados específicos de tu contexto (ej: "Especialista técnico", "Coordinador de auditoría", etc.).</p>
-
-              <div style="background: #e8f5e9; border-left: 3px solid #43a047; padding: 10px; border-radius: 6px; font-size: 11px; margin-top: 12px; line-height: 1.5;">
-                <p style="margin: 0; font-weight: 600;">💡 Tip final:</p>
-                <p style="margin: 0; color: #333;">Carga el ejemplo de datos proporcionado ("Cargar ejemplo") para explorar todas las funcionalidades en contexto real. Esto te familiarizará rápidamente con la plataforma.</p>
-              </div>
-            </div>
-
-            <p style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #ddd; font-size: 9px; text-align: center; color: #666; margin-bottom: 8px;">© 2025 AuditorMonitor | Carlos Alfredo Castillo Flores - ITCPO | Todos los derechos reservados</p>
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
 
-  <!-- Modal genérico per messaggi e cattura testo -->
+  <!-- Modal genérico para mensajes y captura de texto -->
   <div id="app-modal-backdrop" class="modal-backdrop hidden">
     <div class="modal">
       <div class="modal-title" id="modal-title"></div>
@@ -519,6 +194,87 @@
       <div class="modal-actions">
         <button id="modal-cancel" class="btn-chip">Cancelar</button>
         <button id="modal-ok" class="btn-primary">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div id="help-modal-backdrop" class="modal-backdrop hidden">
+    <div class="help-modal">
+      <div class="help-modal-header">
+        <h2 class="help-modal-title">AuditorMonitor - Guía de Uso</h2>
+        <button id="help-close-btn" class="help-close-btn">✕</button>
+      </div>
+      <div class="help-modal-content">
+        <section class="help-section">
+          <h3>¿Qué es AuditorMonitor?</h3>
+          <p>AuditorMonitor es una herramienta integral para la planificación, seguimiento y gestión de auditorías. Permite organizar participantes, definir etapas de auditoría, programar actividades y visualizar el cronograma mediante un diagrama de Gantt.</p>
+        </section>
+
+        <section class="help-section">
+          <h3>Secciones Principales</h3>
+          <div class="help-subsection">
+            <strong>1. Auditoría</strong>
+            <p>Gestiona la información general de la auditoría. Crea un código único, asigna un nombre descriptivo y selecciona al auditor líder. Puedes descargar tus datos en formato JSON o cargar un archivo JSON existente para recuperar proyectos anteriores.</p>
+          </div>
+          <div class="help-subsection">
+            <strong>2. Participantes</strong>
+            <p>Registra a todos los miembros del equipo de auditoría y personal involucrado. Asigna roles específicos (Auditor líder, Auditor, Responsable de proceso, Observador) y gestiona el directorio de contactos con correos electrónicos. Puedes editar o eliminar participantes en cualquier momento.</p>
+          </div>
+          <div class="help-subsection">
+            <strong>3. Etapas</strong>
+            <p>Define las fases principales de la auditoría (planeación, ejecución, informe, etc.). Para cada etapa asigna un nivel de riesgo (bajo, medio, alto), agrega actividades específicas, carga archivos adjuntos y establece fechas de inicio y cierre.</p>
+          </div>
+          <div class="help-subsection">
+            <strong>4. Calendario</strong>
+            <p>Visualiza y programa todas las etapas y actividades en un formato de calendario. Ajusta las fechas de inicio y fin para cada etapa y actividad de manera intuitiva. El sistema permite ver claramente la distribución temporal del proyecto.</p>
+          </div>
+          <div class="help-subsection">
+            <strong>5. Diagrama</strong>
+            <p>Observa un diagrama de Gantt visual que muestra la línea de tiempo completa del proyecto. Las barras naranja representan etapas y las verdes representan actividades. Puedes descargar un informe completo en PDF que incluya todos los detalles de la auditoría.</p>
+          </div>
+        </section>
+
+        <section class="help-section">
+          <h3>Flujo de Trabajo Recomendado</h3>
+          <ol class="help-ordered-list">
+            <li><strong>Crear auditoría:</strong> Ingresa un código y nombre en la sección "Auditoría"</li>
+            <li><strong>Registrar participantes:</strong> Agrega el equipo de trabajo en "Participantes"</li>
+            <li><strong>Definir etapas:</strong> Crea las fases principales en "Etapas" con sus actividades</li>
+            <li><strong>Programar cronograma:</strong> Asigna fechas en "Calendario"</li>
+            <li><strong>Visualizar y reportar:</strong> Revisa el diagrama en "Diagrama" y descarga el informe en PDF</li>
+          </ol>
+        </section>
+
+        <section class="help-section">
+          <h3>Características Clave</h3>
+          <ul class="help-list">
+            <li><strong>Gestor de roles personalizable:</strong> Define roles específicos para tu organización</li>
+            <li><strong>Guardado automático:</strong> Los cambios se guardan en tiempo real en la sesión</li>
+            <li><strong>Exportación de datos:</strong> Descarga tus proyectos como JSON para respaldos o compartir</li>
+            <li><strong>Importación de datos:</strong> Carga proyectos guardados previamente</li>
+            <li><strong>Datos de ejemplo:</strong> Carga datos de muestra para familiarizarte con la herramienta</li>
+            <li><strong>Diagrama de Gantt:</strong> Visualización temporal de todas las actividades</li>
+            <li><strong>Generación de reportes:</strong> Crea reportes en PDF con toda la información de la auditoría</li>
+          </ul>
+        </section>
+
+        <section class="help-section">
+          <h3>Consejos Útiles</h3>
+          <ul class="help-list">
+            <li>Usa códigos de auditoría consistentes para identificar fácilmente tus proyectos</li>
+            <li>Asigna siempre un auditor líder para claridad en la responsabilidad</li>
+            <li>Define actividades claras y específicas dentro de cada etapa</li>
+            <li>Mantén actualizado el cronograma para un seguimiento preciso del proyecto</li>
+            <li>Descarga regularmente respaldos de tus datos en JSON</li>
+            <li>Utiliza niveles de riesgo para priorizar y enfatizar áreas críticas</li>
+          </ul>
+        </section>
+
+        <section class="help-section help-footer">
+          <p class="help-copyright">© 2025 AuditorMonitor | Desarrollado por Carlos Alfredo Castillo Flores - ITCPO</p>
+          <p class="help-copyright-subtitle">Todos los derechos reservados</p>
+        </section>
       </div>
     </div>
   </div>
