@@ -116,6 +116,57 @@ function openTextPrompt({ title = "", message = "", placeholder = "", initialVal
  * Abre un modal específico para editar un participante (nombre, correo, rol) y devuelve
  * la información editada o null si se cancela.
  */
+function openConfirmDialog({ title = "", message = "" } = {}) {
+  const backdrop = $("#app-modal-backdrop");
+  const titleEl = $("#modal-title");
+  const msgEl = $("#modal-message");
+  const inputWrapper = $("#modal-input-wrapper");
+  const okBtn = $("#modal-ok");
+  const cancelBtn = $("#modal-cancel");
+
+  if (!backdrop || !titleEl || !msgEl || !okBtn || !cancelBtn) {
+    return Promise.resolve(false);
+  }
+
+  titleEl.textContent = title;
+  msgEl.textContent = message;
+  inputWrapper.classList.add("hidden");
+  backdrop.classList.remove("hidden");
+
+  // Cambiar textos de botones
+  okBtn.textContent = "Confirmar";
+  cancelBtn.textContent = "Cancelar";
+
+  return new Promise((resolve) => {
+    const close = (result) => {
+      backdrop.classList.add("hidden");
+      okBtn.removeEventListener("click", onOk);
+      cancelBtn.removeEventListener("click", onCancel);
+      document.removeEventListener("keydown", onKey);
+      resolve(result);
+    };
+
+    const onOk = () => {
+      close(true);
+    };
+
+    const onCancel = () => {
+      close(false);
+    };
+
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onCancel();
+      }
+    };
+
+    okBtn.addEventListener("click", onOk);
+    cancelBtn.addEventListener("click", onCancel);
+    document.addEventListener("keydown", onKey);
+  });
+}
+
 function openParticipantEditor(participant = {}, roles = []) {
   const backdrop = $("#app-modal-backdrop");
   const titleEl = $("#modal-title");
@@ -409,6 +460,31 @@ function setupAuditBinding() {
         reader.readAsText(f);
       });
       fileInput.click();
+    });
+  }
+
+  // Reset application button
+  const resetBtn = $("#reset-app");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", async () => {
+      const confirmed = await openConfirmDialog({
+        title: "Reiniciar aplicación",
+        message: "¿Está seguro de que desea reiniciar la aplicación? Se eliminarán TODOS los datos y no se podrá deshacer esta acción."
+      });
+      if (!confirmed) return;
+
+      // Clear state
+      state.audits = {};
+      state.currentAuditCode = "";
+
+      // Reset to default
+      const defaultCode = "AUD-001";
+      setCurrentAuditCode(defaultCode);
+
+      // Reload UI
+      loadAuditIntoUI();
+      updateAuditSelector();
+      renderAll();
     });
   }
 
@@ -1500,68 +1576,60 @@ async function generateGanttReport(filename) {
   // html2canvas necesita que el elemento esté en el DOM
   tmp.style.position = "fixed";
   tmp.style.left = "-20000px";
-  // append once to avoid duplicate DOM insertion that can cause cloning/performance issues
-  document.body.appendChild(tmp);
-
-  // Escalar para obtener mejor calidad
-  // Use the prepared tmp node directly for html2canvas (avoid cloning that can carry non-cloneable objects)
-  // remove any script tags if present (safety)
-  tmp.querySelectorAll && tmp.querySelectorAll("script").forEach(s => s.remove());
-  document.body.appendChild(tmp);
+  tmp.style.top = "-20000px";
+  tmp.style.visibility = "hidden";
+  
+  // Crear un contenedor limpio sin referencias de performance
+  const tmpClone = document.createElement("div");
+  tmpClone.style.width = "840px";
+  tmpClone.style.padding = "16px";
+  tmpClone.style.fontFamily = 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  tmpClone.style.color = "#222";
+  tmpClone.style.position = "fixed";
+  tmpClone.style.left = "-20000px";
+  tmpClone.style.top = "-20000px";
+  tmpClone.style.visibility = "hidden";
+  tmpClone.innerHTML = tmp.innerHTML;
+  
+  document.body.appendChild(tmpClone);
 
   try {
-    // Try with conservative options to avoid passing complex objects internally
-    const canvas = await html2canvas(tmp, {
-      scale: 1.5,
+    // Try with minimal, conservative options to avoid PerformanceServerTiming serialization
+    const canvas = await html2canvas(tmpClone, {
+      scale: 1,
       useCORS: false,
-      allowTaint: false,
-      backgroundColor: "#ffffff"
+      allowTaint: true,
+      backgroundColor: "#ffffff",
+      logging: false,
+      imageTimeout: 0,
+      removeContainer: false
     });
 
-    const imgData = canvas.toDataURL("image/jpeg", 0.92);
-    const imgProps = doc.getImageProperties(imgData);
+    const imgData = canvas.toDataURL("image/jpeg", 0.85);
     const pdfWidth = doc.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    const pdfHeight = (canvas.height / canvas.width) * (pdfWidth - 40);
 
     doc.addImage(imgData, 'JPEG', 20, 20, pdfWidth - 40, pdfHeight);
-    // Si la imagen excede una página, simplificamos añadiendo páginas adicionales con la misma imagen
-    const pageHeight = doc.internal.pageSize.getHeight();
-    let remainingHeight = pdfHeight;
-    let renderedHeight = pageHeight - 40;
-    if (pdfHeight > renderedHeight) {
-      remainingHeight = pdfHeight - renderedHeight;
-      while (remainingHeight > 0) {
-        doc.addPage();
-        doc.addImage(imgData, 'JPEG', 20, 20, pdfWidth - 40, pdfHeight);
-        remainingHeight -= renderedHeight;
-      }
-    }
   } catch (err) {
-    // fallback: intentar con menor escala o generar PDF mínimo con texto si falla
+    // fallback: generar PDF con contenido textual si html2canvas falla
     console.warn("html2canvas error during PDF generation:", err);
-    try {
-      const canvas = await html2canvas(tmp, {
-        scale: 1,
-        useCORS: false,
-        allowTaint: false,
-        backgroundColor: "#ffffff"
-      });
-      const imgData = canvas.toDataURL("image/jpeg", 0.9);
-      const pdfWidth = doc.internal.pageSize.getWidth();
-      const imgProps = doc.getImageProperties(imgData);
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      doc.addImage(imgData, 'JPEG', 20, 20, pdfWidth - 40, pdfHeight);
-    } catch (err2) {
-      // Si aún falla, agregar un resumen textual mínimo
-      doc.addPage();
-      doc.setFontSize(12);
-      doc.text("No fue posible generar la vista previa del informe. Se incluyen a continuación los datos en texto.", 20, 40);
-      doc.setFontSize(10);
-      doc.text(`Auditoría: ${audit ? (audit.code || "N/A") : "N/A"}`, 20, 60);
+    doc.setFontSize(12);
+    doc.text("Informe de Auditoría", 20, 30);
+    doc.setFontSize(10);
+    if (audit) {
+      doc.text(`Auditoría: ${audit.code || "N/A"}`, 20, 50);
+      if (audit.name) doc.text(`Nombre: ${audit.name}`, 20, 65);
+      doc.text(`Participantes: ${audit.participants ? audit.participants.length : 0}`, 20, 80);
+      doc.text(`Etapas: ${audit.stages ? audit.stages.length : 0}`, 20, 95);
     }
   } finally {
     // Limpieza del nodo temporal añadido
-    tmp.remove();
+    if (tmpClone && tmpClone.parentNode) {
+      tmpClone.remove();
+    }
+    if (tmp && tmp.parentNode) {
+      tmp.remove();
+    }
   }
 
   // Guardar archivo
@@ -1571,9 +1639,6 @@ async function generateGanttReport(filename) {
   } catch (e) {
     console.error("Error saving PDF:", e);
   }
-
-  // Limpieza
-  tmp.remove();
 }
 
 // Bind PDF button
@@ -1778,3 +1843,33 @@ function renderAll() {
   updateSummary();
   renderCalendar();
 }
+
+// Setup help button
+window.addEventListener("DOMContentLoaded", () => {
+  const helpBtn = $("#help-button");
+  const helpBackdrop = $("#help-modal-backdrop");
+  const helpCloseBtn = $("#help-close-btn");
+
+  if (helpBtn && helpBackdrop && helpCloseBtn) {
+    helpBtn.addEventListener("click", () => {
+      helpBackdrop.classList.remove("hidden");
+    });
+
+    helpCloseBtn.addEventListener("click", () => {
+      helpBackdrop.classList.add("hidden");
+    });
+
+    helpBackdrop.addEventListener("click", (e) => {
+      if (e.target === helpBackdrop) {
+        helpBackdrop.classList.add("hidden");
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !helpBackdrop.classList.contains("hidden")) {
+        helpBackdrop.classList.add("hidden");
+      }
+    });
+  }
+});

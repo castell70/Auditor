@@ -62,6 +62,7 @@
             <button id="download-json" class="btn-chip">Descargar JSON</button>
             <button id="load-sample" class="btn-chip">Cargar ejemplo</button>
             <button id="load-json" class="btn-chip" title="Cargar datos desde archivo JSON">Cargar JSON</button>
+            <button id="reset-app" class="btn-danger" title="Reiniciar la aplicación y eliminar todos los datos">Reiniciar</button>
           </div>
         </div>
       </div>
@@ -192,6 +193,90 @@
       <div class="modal-actions">
         <button id="modal-cancel" class="btn-chip">Cancelar</button>
         <button id="modal-ok" class="btn-primary">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Help Button -->
+  <button id="help-button" class="help-button" title="Ayuda">?</button>
+
+  <!-- Help Modal -->
+  <div id="help-modal-backdrop" class="modal-backdrop hidden">
+    <div class="help-modal">
+      <div class="help-modal-header">
+        <h2 class="help-modal-title">AuditorMonitor - Guía de Uso</h2>
+        <button id="help-close-btn" class="help-close-btn">✕</button>
+      </div>
+      <div class="help-modal-content">
+        <section class="help-section">
+          <h3>¿Qué es AuditorMonitor?</h3>
+          <p>AuditorMonitor es una herramienta integral para la planificación, seguimiento y gestión de auditorías. Permite organizar participantes, definir etapas de auditoría, programar actividades y visualizar el cronograma mediante un diagrama de Gantt.</p>
+        </section>
+
+        <section class="help-section">
+          <h3>Secciones Principales</h3>
+          <div class="help-subsection">
+            <strong>1. Auditoría</strong>
+            <p>Gestiona la información general de la auditoría. Crea un código único, asigna un nombre descriptivo y selecciona al auditor líder. Puedes descargar tus datos en formato JSON o cargar un archivo JSON existente para recuperar proyectos anteriores.</p>
+          </div>
+          <div class="help-subsection">
+            <strong>2. Participantes</strong>
+            <p>Registra a todos los miembros del equipo de auditoría y personal involucrado. Asigna roles específicos (Auditor líder, Auditor, Responsable de proceso, Observador) y gestiona el directorio de contactos con correos electrónicos. Puedes editar o eliminar participantes en cualquier momento.</p>
+          </div>
+          <div class="help-subsection">
+            <strong>3. Etapas</strong>
+            <p>Define las fases principales de la auditoría (planeación, ejecución, informe, etc.). Para cada etapa asigna un nivel de riesgo (bajo, medio, alto), agrega actividades específicas, carga archivos adjuntos y establece fechas de inicio y cierre.</p>
+          </div>
+          <div class="help-subsection">
+            <strong>4. Calendario</strong>
+            <p>Visualiza y programa todas las etapas y actividades en un formato de calendario. Ajusta las fechas de inicio y fin para cada etapa y actividad de manera intuitiva. El sistema permite ver claramente la distribución temporal del proyecto.</p>
+          </div>
+          <div class="help-subsection">
+            <strong>5. Diagrama</strong>
+            <p>Observa un diagrama de Gantt visual que muestra la línea de tiempo completa del proyecto. Las barras naranja representan etapas y las verdes representan actividades. Puedes descargar un informe completo en PDF que incluya todos los detalles de la auditoría.</p>
+          </div>
+        </section>
+
+        <section class="help-section">
+          <h3>Flujo de Trabajo Recomendado</h3>
+          <ol class="help-ordered-list">
+            <li><strong>Crear auditoría:</strong> Ingresa un código y nombre en la sección "Auditoría"</li>
+            <li><strong>Registrar participantes:</strong> Agrega el equipo de trabajo en "Participantes"</li>
+            <li><strong>Definir etapas:</strong> Crea las fases principales en "Etapas" con sus actividades</li>
+            <li><strong>Programar cronograma:</strong> Asigna fechas en "Calendario"</li>
+            <li><strong>Visualizar y reportar:</strong> Revisa el diagrama en "Diagrama" y descarga el informe en PDF</li>
+          </ol>
+        </section>
+
+        <section class="help-section">
+          <h3>Características Clave</h3>
+          <ul class="help-list">
+            <li><strong>Gestor de roles personalizable:</strong> Define roles específicos para tu organización</li>
+            <li><strong>Guardado automático:</strong> Los cambios se guardan en tiempo real en la sesión</li>
+            <li><strong>Exportación de datos:</strong> Descarga tus proyectos como JSON para respaldos o compartir</li>
+            <li><strong>Importación de datos:</strong> Carga proyectos guardados previamente</li>
+            <li><strong>Datos de ejemplo:</strong> Carga datos de muestra para familiarizarte con la herramienta</li>
+            <li><strong>Diagrama de Gantt:</strong> Visualización temporal de todas las actividades</li>
+            <li><strong>Generación de reportes:</strong> Crea reportes en PDF con toda la información de la auditoría</li>
+          </ul>
+        </section>
+
+        <section class="help-section">
+          <h3>Consejos Útiles</h3>
+          <ul class="help-list">
+            <li>Usa códigos de auditoría consistentes para identificar fácilmente tus proyectos</li>
+            <li>Asigna siempre un auditor líder para claridad en la responsabilidad</li>
+            <li>Define actividades claras y específicas dentro de cada etapa</li>
+            <li>Mantén actualizado el cronograma para un seguimiento preciso del proyecto</li>
+            <li>Descarga regularmente respaldos de tus datos en JSON</li>
+            <li>Utiliza niveles de riesgo para priorizar y enfatizar áreas críticas</li>
+          </ul>
+        </section>
+
+        <section class="help-section help-footer">
+          <p class="help-copyright">© 2025 AuditorMonitor | Desarrollado por Carlos Alfredo Castillo Flores - ITCPO</p>
+          <p class="help-copyright-subtitle">Todos los derechos reservados</p>
+        </section>
       </div>
     </div>
   </div>
