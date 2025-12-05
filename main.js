@@ -1844,14 +1844,15 @@ function renderAll() {
   renderCalendar();
 }
 
-// Setup help button
+// Setup help button in tab bar
 window.addEventListener("DOMContentLoaded", () => {
   const helpBtn = $("#help-button");
   const helpBackdrop = $("#help-modal-backdrop");
   const helpCloseBtn = $("#help-close-btn");
 
   if (helpBtn && helpBackdrop && helpCloseBtn) {
-    helpBtn.addEventListener("click", () => {
+    helpBtn.addEventListener("click", (e) => {
+      e.preventDefault();
       helpBackdrop.classList.remove("hidden");
     });
 

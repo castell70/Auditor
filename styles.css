@@ -957,36 +957,19 @@ body {
   }
 }
 
-/* Floating Help Button */
-.help-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--orange);
-  color: #ffffff;
-  border: none;
-  font-size: 24px;
+/* Help Tab Button Styles */
+.help-tab-button {
+  background: var(--orange) !important;
+  color: #fff !important;
+  margin-left: auto;
+  font-size: 13px;
   font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(245, 124, 0, 0.3);
-  transition: all 0.3s ease;
-  z-index: 998;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  flex: 0 0 auto;
+  padding: 6px 10px;
 }
 
-.help-button:hover {
-  background: var(--orange-dark);
-  box-shadow: 0 6px 16px rgba(245, 124, 0, 0.4);
-  transform: scale(1.08);
-}
-
-.help-button:active {
-  transform: scale(0.96);
+.help-tab-button:hover {
+  opacity: 0.9;
 }
 
 /* Help Modal Styles */
