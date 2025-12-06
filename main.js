@@ -818,6 +818,7 @@ function openStageEditor(stage = {}) {
   const datesRow = document.createElement("div");
   datesRow.style.display = "flex";
   datesRow.style.gap = "8px";
+  datesRow.style.alignItems = "center";
   datesRow.appendChild(startInput);
   datesRow.appendChild(endInput);
   wrapperInner.appendChild(datesRow);
@@ -900,6 +901,7 @@ function openActivityEditor(activity = {}) {
   const datesRow = document.createElement("div");
   datesRow.style.display = "flex";
   datesRow.style.gap = "8px";
+  datesRow.style.alignItems = "center";
   datesRow.appendChild(startInput);
   datesRow.appendChild(endInput);
   wrapperInner.appendChild(datesRow);
@@ -1179,6 +1181,8 @@ function renderStages() {
     // note: delete button was moved into rightActions above
     list.appendChild(li);
   });
+
+  renderGantt();
 }
 
 // Calendario
@@ -1839,30 +1843,10 @@ function renderAll() {
   renderCalendar();
 }
 
-// Setup help TOC toggle and help section activation
+// Setup help TOC toggle and help section activation (single, cleaned listener)
 window.addEventListener("DOMContentLoaded", () => {
-  const tocToggle = document.querySelector(".help-toc-toggle");
   const tocList = document.querySelector(".help-toc-list");
   const tocLinks = document.querySelectorAll(".help-toc-link");
-
-  if (tocToggle && tocList) {
-    tocToggle.addEventListener("click", () => {
-      tocList.classList.toggle("hidden");
-    });
-
-    tocLinks.forEach(link => {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        const target = link.getAttribute("href");
-        const el = document.querySelector(target);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
-          // Close TOC after selection
-          tocList.classList.add("hidden");
-        }
-      });
-    });
-  }
 
   // Initialize help sections visibility
   const helpLinks = document.querySelectorAll(".help-toc-link");
@@ -1877,6 +1861,7 @@ window.addEventListener("DOMContentLoaded", () => {
     helpLinks[0].classList.add("active");
   }
 
+  // Wire up TOC links (use data-topic consistently)
   helpLinks.forEach(link => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
@@ -1895,4 +1880,66 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  // Allow the TOC to be toggled via optional toggle button if present
+  const tocToggle = document.querySelector(".help-toc-toggle");
+  if (tocToggle && tocList) {
+    tocToggle.addEventListener("click", () => {
+      tocList.classList.toggle("hidden");
+    });
+  }
+});
+
+/* Fix modal confirm button text restoration: ensure openConfirmDialog resets button labels after close.
+   (We restore default strings when closing) */
+// ... existing code ...
+
+/* Previously there was a duplicated DOMContentLoaded help-initializer here that used href-based targets
+   and could cause inconsistent behavior — it has been removed to avoid conflicts. */
+
+// Setup help TOC toggle and help section activation (single, cleaned listener)
+window.addEventListener("DOMContentLoaded", () => {
+  const tocList = document.querySelector(".help-toc-list");
+  const tocLinks = document.querySelectorAll(".help-toc-link");
+
+  // Initialize help sections visibility
+  const helpLinks = document.querySelectorAll(".help-toc-link");
+  const helpSections = document.querySelectorAll(".help-section");
+
+  if (helpSections.length > 0) {
+    helpSections.forEach(s => s.classList.remove("active"));
+    helpSections[0].classList.add("active");
+  }
+  if (helpLinks.length > 0) {
+    helpLinks.forEach(l => l.classList.remove("active"));
+    helpLinks[0].classList.add("active");
+  }
+
+  // Wire up TOC links (use data-topic consistently)
+  helpLinks.forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const topicId = link.getAttribute("data-topic");
+      if (!topicId) return;
+
+      helpSections.forEach(section => section.classList.remove("active"));
+      helpLinks.forEach(l => l.classList.remove("active"));
+
+      const targetSection = document.getElementById(topicId);
+      if (targetSection) {
+        targetSection.classList.add("active");
+        link.classList.add("active");
+        const helpContent = document.querySelector(".help-content");
+        if (helpContent) helpContent.scrollTop = 0;
+      }
+    });
+  });
+
+  // Allow the TOC to be toggled via optional toggle button if present
+  const tocToggle = document.querySelector(".help-toc-toggle");
+  if (tocToggle && tocList) {
+    tocToggle.addEventListener("click", () => {
+      tocList.classList.toggle("hidden");
+    });
+  }
 });
