@@ -10,8 +10,7 @@ const state = {
   ],
 };
 
-// Añadimos imports de jspdf y html2canvas (usando importmap)
-import { jsPDF } from "jspdf";
+ // Añadimos import de html2canvas (usando importmap)
 import html2canvas from "html2canvas";
 
 // Helpers
@@ -271,6 +270,7 @@ function createEmptyAudit(code = "") {
   return {
     code,
     name: "",
+    description: "", // added description field
     leadAuditorId: null,
     participants: [],
     stages: [],
@@ -334,6 +334,7 @@ function setupTabs() {
 function setupAuditBinding() {
   const codeInput = $("#audit-code");
   const nameInput = $("#audit-name");
+  const descriptionInput = $("#audit-description"); // new
   const leadSel = $("#lead-auditor");
   const auditSelector = $("#audit-selector");
   const saveBtn = $("#save-audit");
@@ -345,6 +346,7 @@ function setupAuditBinding() {
   if (current) {
     codeInput.value = current.code;
     nameInput.value = current.name;
+    if (descriptionInput) descriptionInput.value = current.description || "";
   }
 
   codeInput.addEventListener("input", () => {
@@ -359,35 +361,20 @@ function setupAuditBinding() {
     scheduleRender();
   });
 
+  // bind description input to audit state
+  if (descriptionInput) {
+    descriptionInput.addEventListener("input", () => {
+      const audit = getCurrentAudit();
+      if (!audit) return;
+      audit.description = descriptionInput.value.trim();
+      scheduleRender();
+    });
+  }
+
   leadSel.addEventListener("change", () => {
     const audit = getCurrentAudit();
     if (!audit) return;
     audit.leadAuditorId = leadSel.value || null;
-  });
-
-  saveBtn.addEventListener("click", () => {
-    const newCode = codeInput.value.trim();
-    if (!newCode) return;
-
-    const oldCode = state.currentAuditCode;
-    let audit = getCurrentAudit() || createEmptyAudit();
-
-    if (!oldCode) {
-      // Nunca se había definido
-      state.currentAuditCode = newCode;
-      audit.code = newCode;
-      state.audits[newCode] = audit;
-    } else if (oldCode !== newCode) {
-      // Renombrar código
-      delete state.audits[oldCode];
-      audit.code = newCode;
-      state.audits[newCode] = audit;
-      state.currentAuditCode = newCode;
-    } else {
-      audit.code = newCode;
-    }
-
-    updateAuditSelector();
   });
 
   auditSelector.addEventListener("change", () => {
@@ -468,23 +455,13 @@ function setupAuditBinding() {
   if (resetBtn) {
     resetBtn.addEventListener("click", async () => {
       const confirmed = await openConfirmDialog({
-        title: "Reiniciar aplicación",
-        message: "¿Está seguro de que desea reiniciar la aplicación? Se eliminarán TODOS los datos y no se podrá deshacer esta acción."
+        title: "Actualizar página",
+        message: "¿Está seguro de que desea actualizar la página? Se recargará el navegador."
       });
       if (!confirmed) return;
 
-      // Clear state
-      state.audits = {};
-      state.currentAuditCode = "";
-
-      // Reset to default
-      const defaultCode = "AUD-001";
-      setCurrentAuditCode(defaultCode);
-
-      // Reload UI
-      loadAuditIntoUI();
-      updateAuditSelector();
-      renderAll();
+      // Reload page
+      location.reload();
     });
   }
 
@@ -496,10 +473,12 @@ function loadAuditIntoUI() {
   const audit = getCurrentAudit();
   const codeInput = $("#audit-code");
   const nameInput = $("#audit-name");
+  const descInput = $("#audit-description"); // new
 
   if (!audit) {
     codeInput.value = "";
     nameInput.value = "";
+    if (descInput) descInput.value = "";
     $("#lead-auditor").value = "";
     $("#participants-list").innerHTML = "";
     $("#stages-list").innerHTML = "";
@@ -510,6 +489,7 @@ function loadAuditIntoUI() {
 
   codeInput.value = audit.code || "";
   nameInput.value = audit.name || "";
+  if (descInput) descInput.value = audit.description || "";
 
   renderParticipants();
   updateLeadAuditorOptions();
@@ -994,6 +974,9 @@ function renderStages() {
       s.startDate = res.startDate || "";
       s.endDate = res.endDate || "";
       scheduleRender();
+      renderGantt();
+      updateSummary();
+      // keep calendar view in sync
       renderCalendar();
     });
 
@@ -1011,6 +994,9 @@ function renderStages() {
       const idx = audit.stages.findIndex((x) => x.id === s.id);
       if (idx !== -1) audit.stages.splice(idx, 1);
       scheduleRender();
+      renderGantt();
+      updateSummary();
+      // keep calendar view in sync
       renderCalendar();
     });
 
@@ -1049,36 +1035,19 @@ function renderStages() {
     scheduleInfo.style.gap = "8px";
     scheduleInfo.style.alignItems = "center";
 
-    const startInput = document.createElement("input");
-    startInput.type = "date";
-    startInput.className = "field-input";
-    startInput.style.maxWidth = "140px";
-    startInput.value = s.startDate || "";
-    startInput.addEventListener("change", () => {
-      s.startDate = startInput.value;
-      scheduleRender();
-      renderGantt();
-      updateSummary();
-      // keep calendar view in sync
-      renderCalendar();
-    });
+    // Mostrar fechas como texto de solo lectura (las fechas solo se editan desde "Editar etapa")
+    const startDisplay = document.createElement("div");
+    startDisplay.style.fontSize = "12px";
+    startDisplay.style.color = "var(--text-muted)";
+    startDisplay.textContent = s.startDate ? `Inicio: ${formatDateDisplay(s.startDate)}` : "Inicio: —";
 
-    const endInput = document.createElement("input");
-    endInput.type = "date";
-    endInput.className = "field-input";
-    endInput.style.maxWidth = "140px";
-    endInput.value = s.endDate || "";
-    endInput.addEventListener("change", () => {
-      s.endDate = endInput.value;
-      scheduleRender();
-      renderGantt();
-      updateSummary();
-      // keep calendar view in sync
-      renderCalendar();
-    });
+    const endDisplay = document.createElement("div");
+    endDisplay.style.fontSize = "12px";
+    endDisplay.style.color = "var(--text-muted)";
+    endDisplay.textContent = s.endDate ? `Fin: ${formatDateDisplay(s.endDate)}` : "Fin: —";
 
-    scheduleInfo.appendChild(startInput);
-    scheduleInfo.appendChild(endInput);
+    scheduleInfo.appendChild(startDisplay);
+    scheduleInfo.appendChild(endDisplay);
 
     // Listado de actividades con editar/eliminar por actividad
     const activitiesWrapper = document.createElement("div");
@@ -1175,18 +1144,21 @@ function renderStages() {
     addActivityBtn.className = "btn-chip";
     addActivityBtn.textContent = "Agregar actividad";
     addActivityBtn.addEventListener("click", async () => {
-      const name = await openTextPrompt({
-        title: "Nueva actividad",
-        message: `Agrega una actividad para la etapa "${s.name}"`,
-        placeholder: "Nombre de la actividad",
+      // Open the full activity editor so the user can provide name, dates and description
+      const result = await openActivityEditor({
+        name: "",
+        startDate: "",
+        endDate: "",
+        description: ""
       });
-      if (!name) return;
+      if (!result) return;
       if (!s.activities) s.activities = [];
       s.activities.push({
         id: uuid(),
-        name: name.trim(),
-        startDate: "",
-        endDate: "",
+        name: result.name || "(sin nombre)",
+        startDate: result.startDate || "",
+        endDate: result.endDate || "",
+        description: result.description || ""
       });
       scheduleRender();
       renderGantt();
@@ -1353,48 +1325,43 @@ function renderGantt() {
     return;
   }
 
-  // Recolectar todas las fechas
-  const ranges = [];
+  // Calcular rango global usando startDate / endDate en etapas y actividades
+  let minStart = null;
+  let maxEnd = null;
   audit.stages.forEach((s) => {
-    if (s.startDate && s.endDate) {
-      ranges.push({
-        type: "stage",
-        id: s.id,
-        name: s.name,
-        start: new Date(s.startDate),
-        end: new Date(s.endDate),
-      });
+    if (s.startDate) {
+      const d = new Date(s.startDate);
+      if (!isNaN(d)) {
+        if (!minStart || d < minStart) minStart = d;
+      }
+    }
+    if (s.endDate) {
+      const d = new Date(s.endDate);
+      if (!isNaN(d)) {
+        if (!maxEnd || d > maxEnd) maxEnd = d;
+        if (!minStart) minStart = d;
+      }
     }
     (s.activities || []).forEach((a) => {
-      if (a.startDate && a.endDate) {
-        ranges.push({
-          type: "activity",
-          id: a.id,
-          stageId: s.id,
-          stageName: s.name,
-          name: a.name,
-          start: new Date(a.startDate),
-          end: new Date(a.endDate),
-          description: a.description || ""
-        });
+      if (a.startDate) {
+        const d = new Date(a.startDate);
+        if (!isNaN(d)) {
+          if (!minStart || d < minStart) minStart = d;
+          if (!maxEnd) maxEnd = d;
+        }
+      }
+      if (a.endDate) {
+        const d = new Date(a.endDate);
+        if (!isNaN(d)) {
+          if (!maxEnd || d > maxEnd) maxEnd = d;
+          if (!minStart) minStart = d;
+        }
       }
     });
   });
 
-  if (ranges.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "gantt-empty";
-    empty.textContent = "Agrega fechas a las etapas o actividades para ver el diagrama de Gantt";
-    container.appendChild(empty);
-    return;
-  }
-
-  let minStart = ranges[0].start;
-  let maxEnd = ranges[0].end;
-  ranges.forEach((r) => {
-    if (r.start < minStart) minStart = r.start;
-    if (r.end > maxEnd) maxEnd = r.end;
-  });
+  if (!minStart || isNaN(minStart)) minStart = new Date();
+  if (!maxEnd || isNaN(maxEnd)) maxEnd = new Date(minStart);
 
   const msPerDay = 1000 * 60 * 60 * 24;
   const totalDays = Math.max(1, Math.round((maxEnd - minStart) / msPerDay) + 1);
@@ -1446,57 +1413,65 @@ function renderGantt() {
   legend.appendChild(legendActivity);
   container.appendChild(legend);
 
-  // Agrupar por etapa para mostrar filas
-  const stagesMap = new Map();
-  audit.stages.forEach((s) => {
-    stagesMap.set(s.id, {
-      stage: s,
-      activities: (s.activities || []),
-    });
-  });
-
-  stagesMap.forEach(({ stage, activities }) => {
+  // Mostrar filas por etapa
+  audit.stages.forEach((stage) => {
     const row = document.createElement("div");
     row.className = "gantt-row";
 
     const label = document.createElement("div");
     label.className = "gantt-label";
-    label.textContent = stage.name;
+
+    // stage title
+    const titleEl = document.createElement("div");
+    titleEl.textContent = stage.name || "(sin nombre)";
+    titleEl.style.fontWeight = "600";
+    titleEl.style.fontSize = "13px";
+
+    // stage description (más visible debajo del título)
+    const descEl = document.createElement("div");
+    descEl.className = "gantt-label-desc";
+    descEl.textContent = stage.description ? stage.description : "";
+    descEl.style.marginTop = "4px";
+
+    label.appendChild(titleEl);
+    label.appendChild(descEl);
 
     const barArea = document.createElement("div");
     barArea.className = "gantt-bar-area";
 
-    // Barra de etapa
+    // Barra de etapa (usar startDate / endDate)
     if (stage.startDate && stage.endDate) {
       const sStart = new Date(stage.startDate);
       const sEnd = new Date(stage.endDate);
-      const startOffset = Math.max(0, Math.round((sStart - minStart) / msPerDay));
-      const duration = Math.max(1, Math.round((sEnd - sStart) / msPerDay) + 1);
+      if (!isNaN(sStart) && !isNaN(sEnd)) {
+        const startOffset = Math.max(0, Math.round((sStart - minStart) / msPerDay));
+        const duration = Math.max(1, Math.round((sEnd - sStart) / msPerDay) + 1);
 
-      const bar = document.createElement("div");
-      bar.className = "gantt-bar gantt-bar-stage";
-      bar.style.left = `${(startOffset / totalDays) * 100}%`;
-      bar.style.width = `${(duration / totalDays) * 100}%`;
-      bar.title = `${stage.name} — ${stage.startDate || ""} → ${stage.endDate || ""}`;
-      barArea.appendChild(bar);
+        const bar = document.createElement("div");
+        bar.className = "gantt-bar gantt-bar-stage";
+        bar.style.left = `${(startOffset / totalDays) * 100}%`;
+        bar.style.width = `${(duration / totalDays) * 100}%`;
+        bar.title = `${stage.name} — ${stage.startDate || ""} → ${stage.endDate || ""}`;
+        barArea.appendChild(bar);
+      }
     }
 
-    // Barras de actividades
-    activities.forEach((a, index) => {
+    // Barras de actividades (usar startDate / endDate)
+    (stage.activities || []).forEach((a, index) => {
       if (!a.startDate || !a.endDate) return;
       const aStart = new Date(a.startDate);
       const aEnd = new Date(a.endDate);
+      if (isNaN(aStart) || isNaN(aEnd)) return;
       const startOffset = Math.max(0, Math.round((aStart - minStart) / msPerDay));
       const duration = Math.max(1, Math.round((aEnd - aStart) / msPerDay) + 1);
 
       const bar = document.createElement("div");
       bar.className = "gantt-bar gantt-bar-activity";
       // Separar ligeramente verticalmente por actividad
-      bar.style.top = `${4 + index * 6}px`;
+      bar.style.top = `${4 + index * 10}px`;
       bar.style.left = `${(startOffset / totalDays) * 100}%`;
       bar.style.width = `${(duration / totalDays) * 100}%`;
 
-      // Tooltip con descripción (si existe) y datos básicos
       const desc = a.description ? `Descripción: ${a.description}\n` : "";
       bar.title = `${a.name} — ${a.startDate} → ${a.endDate}\n${desc}`.trim();
 
@@ -1509,151 +1484,170 @@ function renderGantt() {
   });
 }
 
-// Nuevo: función para generar reporte descargable en PDF (usa jsPDF + html2canvas)
-async function generateGanttReport(filename) {
+/* Nuevo: función para generar un informe en formato Word (.doc) basado en HTML */
+async function generateWordReport(filename) {
   const audit = getCurrentAudit();
-  const doc = new jsPDF({
-    unit: "pt",
-    format: "a4",
-    compress: true
-  });
 
-  // Construir un contenedor temporal con el contenido a renderizar
-  const tmp = document.createElement("div");
-  tmp.style.width = "840px"; // ancho aproximado para mejor resolución en A4
-  tmp.style.padding = "16px";
-  tmp.style.fontFamily = 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
-  tmp.style.color = "#222";
+  // Encabezado con nombre de la aplicación y fecha de generación
+  const now = new Date();
+  const generatedAt = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth()+1).padStart(2,"0")}/${now.getFullYear()} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
 
-  const titleForDoc = filename && filename.trim() ? filename.trim() : (audit ? (audit.name || audit.code) : "Informe");
+  const title = filename && filename.trim() ? filename.trim() : (audit ? (audit.name || audit.code) : "Informe de auditoría");
 
-  // Secciones: Datos generales
-  const genHtml = `
-    <h1 style="color:#f57c00;margin-bottom:8px;">${titleForDoc}</h1>
-    <div style="font-size:12px;margin-bottom:8px;">
-      <strong>Auditoría:</strong> ${audit ? (audit.code + (audit.name ? ` — ${audit.name}` : "")) : "N/A"}<br/>
-      <strong>Auditor líder:</strong> ${audit && audit.leadAuditorId ? (audit.participants.find(p=>p.id===audit.leadAuditorId)?.name || "") : "No asignado"}
-    </div>
-  `;
-  tmp.innerHTML = genHtml;
+  // Construir HTML profesional para Word
+  const htmlParts = [];
+  htmlParts.push(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>`);
+  htmlParts.push('<style>');
+  htmlParts.push('body{font-family: "Segoe UI", Roboto, Arial, sans-serif; color:#222; margin:20px;}');
+  htmlParts.push('.header{border-bottom:4px solid #f57c00;padding-bottom:10px;margin-bottom:18px;}');
+  htmlParts.push('.app-title{color:#f57c00;font-size:20px;font-weight:700;margin:0;}');
+  htmlParts.push('.meta{font-size:12px;color:#555;margin-top:6px;}');
+  htmlParts.push('h2{color:#333;margin:12px 0 6px 0;}');
+  htmlParts.push('.participants{column-count:3;column-gap:18px;}');
+  htmlParts.push('.stage{margin-bottom:10px;padding:10px;border:1px solid #eee;border-radius:6px;background:#fff;}');
+  htmlParts.push('.stage .meta{font-size:12px;color:#666;margin-top:6px;}');
+  htmlParts.push('table{width:100%;border-collapse:collapse;margin-top:8px;}');
+  htmlParts.push('th,td{border:1px solid #e8e8e8;padding:6px;text-align:left;font-size:12px;}');
+  htmlParts.push('.small{font-size:11px;color:#666;}');
+  htmlParts.push('img.gantt-snap{display:block;margin-top:12px;max-width:100%;height:auto;border:1px solid #e8e8e8;}');
+  htmlParts.push('</style></head><body>');
 
-  // Participantes en 3 columnas (HTML sencillo)
-  const participantsHTML = (audit && audit.participants && audit.participants.length)
-    ? `<div style="margin-bottom:12px;"><h3 style="margin:6px 0 8px 0;">Listado de participantes</h3><div style="column-count:3;column-gap:16px;">${audit.participants.map(p => `<div style="break-inside:avoid;margin-bottom:6px;"><strong>${p.name}</strong><div style="font-size:11px;color:#555;">${p.email || "sin correo"} — ${roleLabel(p.role)}</div></div>`).join("")}</div></div>`
-    : `<div style="margin-bottom:12px;"><h3 style="margin:6px 0 8px 0;">Listado de participantes</h3><div>No hay participantes</div></div>`;
+  // Header
+  htmlParts.push(`<div class="header"><div class="app-title">AuditorMonitor</div><div class="meta">Informe generado: ${escapeHtml(generatedAt)}</div></div>`);
+  htmlParts.push(`<h2>${escapeHtml(title)}</h2>`);
 
-  tmp.insertAdjacentHTML("beforeend", participantsHTML);
+  // Datos generales
+  htmlParts.push('<div>');
+  htmlParts.push(`<p class="small"><strong>Código:</strong> ${escapeHtml(audit ? (audit.code || "") : "")}</p>`);
+  htmlParts.push(`<p class="small"><strong>Nombre de auditoría:</strong> ${escapeHtml(audit ? (audit.name || "") : "")}</p>`);
+  htmlParts.push(`<p class="small"><strong>Descripción:</strong> ${escapeHtml(audit ? (audit.description || "") : "")}</p>`);
+  const leaderName = (audit && audit.leadAuditorId) ? (audit.participants.find(p => p.id === audit.leadAuditorId)?.name || "") : "No asignado";
+  htmlParts.push(`<p class="small"><strong>Auditor líder:</strong> ${escapeHtml(leaderName)}</p>`);
+  htmlParts.push('</div>');
 
-  // Etapas y actividades con calendario
-  const stagesHTML = (audit && audit.stages && audit.stages.length)
-    ? `<div style="margin-bottom:12px;"><h3 style="margin:6px 0 8px 0;">Definición de las etapas</h3>${audit.stages.map(s => {
-        const acts = (s.activities || []).map(a => {
-          const start = formatDateDisplay(a.startDate);
-          const end = formatDateDisplay(a.endDate);
-          const dates = a.startDate ? ` — ${start} → ${end}` : "";
-          return `<li style="font-size:12px;margin-bottom:4px;">${a.name}${dates}${a.description ? ` — ${a.description}` : ""}</li>`;
-        }).join("");
-        const atts = (s.attachments || []).map(at => at.name).join(", ");
-        const sStart = formatDateDisplay(s.startDate);
-        const sEnd = formatDateDisplay(s.endDate);
-        return `<div style="margin-bottom:8px;"><strong style="font-size:13px;">${s.name}</strong> <div style="font-size:12px;color:#555;">Riesgo: ${s.risk} · Fechas: ${sStart} → ${sEnd} · Adjuntos: ${atts || "Ninguno"}</div><ul style="margin-top:6px;padding-left:16px;">${acts || "<li style='font-size:12px;'>Sin actividades</li>"}</ul></div>`;
-      }).join("")}</div>`
-    : `<div style="margin-bottom:12px;"><h3 style="margin:6px 0 8px 0;">Definición de las etapas</h3><div>Sin etapas</div></div>`;
-
-  tmp.insertAdjacentHTML("beforeend", stagesHTML);
-
-  // Diagrama: reutilizar el gantt actual pero simplificar estilo para captura
-  const gantt = $("#gantt-container");
-  const ganttClone = document.createElement("div");
-  ganttClone.style.border = "1px solid #ddd";
-  ganttClone.style.padding = "8px";
-  ganttClone.style.background = "#fafafa";
-  ganttClone.innerHTML = gantt ? gantt.innerHTML : "<div>Sin diagrama</div>";
-
-  tmp.appendChild(ganttClone);
-
-  // Renderizar a canvas con html2canvas y añadir a PDF
-  // html2canvas necesita que el elemento esté en el DOM
-  tmp.style.position = "fixed";
-  tmp.style.left = "-20000px";
-  tmp.style.top = "-20000px";
-  tmp.style.visibility = "hidden";
-  
-  // Crear un contenedor limpio sin referencias de performance
-  const tmpClone = document.createElement("div");
-  tmpClone.style.width = "840px";
-  tmpClone.style.padding = "16px";
-  tmpClone.style.fontFamily = 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
-  tmpClone.style.color = "#222";
-  tmpClone.style.position = "fixed";
-  tmpClone.style.left = "-20000px";
-  tmpClone.style.top = "-20000px";
-  tmpClone.style.visibility = "hidden";
-  tmpClone.innerHTML = tmp.innerHTML;
-  
-  document.body.appendChild(tmpClone);
-
-  try {
-    // Try with minimal, conservative options to avoid PerformanceServerTiming serialization
-    const canvas = await html2canvas(tmpClone, {
-      scale: 1,
-      useCORS: false,
-      allowTaint: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-      imageTimeout: 0,
-      removeContainer: false
+  // Participantes
+  htmlParts.push('<h3>Participantes</h3>');
+  if (audit && audit.participants && audit.participants.length) {
+    htmlParts.push('<div class="participants">');
+    audit.participants.forEach(p => {
+      htmlParts.push(`<div><strong>${escapeHtml(p.name)}</strong><div class="small">${escapeHtml(p.email || "sin correo")} — ${escapeHtml(roleLabel(p.role))}</div></div>`);
     });
-
-    const imgData = canvas.toDataURL("image/jpeg", 0.85);
-    const pdfWidth = doc.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height / canvas.width) * (pdfWidth - 40);
-
-    doc.addImage(imgData, 'JPEG', 20, 20, pdfWidth - 40, pdfHeight);
-  } catch (err) {
-    // fallback: generar PDF con contenido textual si html2canvas falla
-    console.warn("html2canvas error during PDF generation:", err);
-    doc.setFontSize(12);
-    doc.text("Informe de Auditoría", 20, 30);
-    doc.setFontSize(10);
-    if (audit) {
-      doc.text(`Auditoría: ${audit.code || "N/A"}`, 20, 50);
-      if (audit.name) doc.text(`Nombre: ${audit.name}`, 20, 65);
-      doc.text(`Participantes: ${audit.participants ? audit.participants.length : 0}`, 20, 80);
-      doc.text(`Etapas: ${audit.stages ? audit.stages.length : 0}`, 20, 95);
-    }
-  } finally {
-    // Limpieza del nodo temporal añadido
-    if (tmpClone && tmpClone.parentNode) {
-      tmpClone.remove();
-    }
-    if (tmp && tmp.parentNode) {
-      tmp.remove();
-    }
+    htmlParts.push('</div>');
+  } else {
+    htmlParts.push('<p class="small">No hay participantes.</p>');
   }
 
-  // Guardar archivo
-  const outName = (filename && filename.trim()) ? `${filename.trim()}.pdf` : `${(audit ? (audit.code || "informe") : "informe")}.pdf`;
+  // Etapas y actividades
+  htmlParts.push('<h3>Etapas y actividades</h3>');
+  if (audit && audit.stages && audit.stages.length) {
+    audit.stages.forEach(s => {
+      htmlParts.push('<div class="stage">');
+      htmlParts.push(`<strong>${escapeHtml(s.name || "(sin nombre)")}</strong>`);
+      htmlParts.push(`<div class="meta">Riesgo: ${escapeHtml(s.risk || "")} · Fechas: ${escapeHtml(formatDateDisplay(s.startDate))} → ${escapeHtml(formatDateDisplay(s.endDate))}</div>`);
+
+      // Adjuntos
+      const atts = (s.attachments || []).map(a => escapeHtml(a.name)).join(", ") || "Ninguno";
+      htmlParts.push(`<div class="small" style="margin-top:6px;"><strong>Adjuntos:</strong> ${atts}</div>`);
+
+      // Actividades como tabla
+      const acts = s.activities || [];
+      if (acts.length) {
+        htmlParts.push('<table><thead><tr><th>Actividad</th><th>Inicio</th><th>Fin</th><th>Descripción</th></tr></thead><tbody>');
+        acts.forEach(a => {
+          htmlParts.push(`<tr><td>${escapeHtml(a.name || "")}</td><td>${escapeHtml(formatDateDisplay(a.startDate))}</td><td>${escapeHtml(formatDateDisplay(a.endDate))}</td><td>${escapeHtml(a.description || "")}</td></tr>`);
+        });
+        htmlParts.push('</tbody></table>');
+      } else {
+        htmlParts.push('<div class="small" style="margin-top:8px;">Sin actividades</div>');
+      }
+
+      htmlParts.push('</div>'); // stage
+    });
+  } else {
+    htmlParts.push('<p class="small">No hay etapas definidas.</p>');
+  }
+
+  // Incluir una representación textual del diagrama (listado de barras con fechas)
+  htmlParts.push('<h3>Diagrama (resumen de cronograma)</h3>');
+  const allRanges = [];
+  if (audit && audit.stages) {
+    audit.stages.forEach((s) => {
+      if (s.startDate || s.endDate) allRanges.push({ type: 'Etapa', name: s.name, start: s.startDate, end: s.endDate });
+      (s.activities || []).forEach((a) => {
+        if (a.startDate || a.endDate) allRanges.push({ type: 'Actividad', name: `${s.name} — ${a.name}`, start: a.startDate, end: a.endDate });
+      });
+    });
+  }
+  if (allRanges.length) {
+    htmlParts.push('<table><thead><tr><th>Tipo</th><th>Elemento</th><th>Inicio</th><th>Fin</th></tr></thead><tbody>');
+    allRanges.forEach(r => {
+      htmlParts.push(`<tr><td>${escapeHtml(r.type)}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(formatDateDisplay(r.start))}</td><td>${escapeHtml(formatDateDisplay(r.end))}</td></tr>`);
+    });
+    htmlParts.push('</tbody></table>');
+  } else {
+    htmlParts.push('<p class="small">No hay datos de fechas para mostrar en el diagrama.</p>');
+  }
+
+  // Footer / metadatos - dejaremos espacio para la imagen del Gantt después de la tabla
+  htmlParts.push(`<div style="margin-top:18px;font-size:11px;color:#777;">Documento generado por: AuditorMonitor - ITCPO-2025 — ${escapeHtml(generatedAt)}</div>`);
+
+  // Cerrar body por ahora y añadiremos la imagen del Gantt dinámicamente
+  htmlParts.push('</body></html>');
+
+  // Intentar capturar el Gantt como imagen y añadirla justo después del resumen (si existe)
+  let finalHtml = htmlParts.join('');
+
   try {
-    doc.save(outName);
-  } catch (e) {
-    console.error("Error saving PDF:", e);
+    const ganttEl = document.getElementById("gantt-container");
+    if (ganttEl) {
+      // usar html2canvas para capturar el elemento
+      const canvas = await html2canvas(ganttEl, { backgroundColor: null, scale: 1.5, useCORS: true });
+      const dataUrl = canvas.toDataURL("image/png");
+      // Insertar la imagen antes de cierre de body
+      finalHtml = finalHtml.replace('</body></html>', `<h3>Gráfico del Diagrama de Gantt</h3><img class="gantt-snap" src="${dataUrl}" alt="Diagrama de Gantt"/><div style="page-break-after:always"></div></body></html>`);
+    }
+  } catch (err) {
+    // Si falla la captura, incluimos una nota pequeña en el documento indicando que la imagen no pudo generarse
+    finalHtml = finalHtml.replace('</body></html>', `<p class="small">No se pudo generar la imagen del Diagrama de Gantt. Error: ${escapeHtml(String(err.message || err))}</p></body></html>`);
+  }
+
+  // Crear Blob y forzar descarga como .doc (Word abrirá este HTML)
+  const blob = new Blob([finalHtml], { type: "application/msword" });
+  const outName = (filename && filename.trim()) ? `${filename.trim()}.doc` : `${(audit ? (audit.code || "informe") : "informe")}.doc`;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = outName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  // Helper to escape HTML
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 }
 
-// Bind PDF button
+/* Bind Word button */
 window.addEventListener("DOMContentLoaded", () => {
-  const pdfBtn = $("#gantt-pdf-btn");
-  if (pdfBtn) {
-    pdfBtn.addEventListener("click", () => {
+  const wordBtn = $("#gantt-word-btn");
+  if (wordBtn) {
+    wordBtn.addEventListener("click", () => {
       openTextPrompt({
-        title: "Descargar Informe en PDF",
-        message: "El informe se generará y descargará en formato PDF. Ingresa un nombre para el archivo (opcional).",
+        title: "Descargar Informe en Word",
+        message: "El informe se generará y descargará en formato Word (.doc). Ingresa un nombre para el archivo (opcional).",
         placeholder: "Nombre del archivo (sin extensión)",
         initialValue: ""
       }).then((val) => {
         if (val === null) return;
-        generateGanttReport(val || undefined);
+        generateWordReport(val || undefined);
       });
     });
   }
@@ -1710,6 +1704,7 @@ function loadSampleData() {
   const sampleCode = "AUD-2025-01";
   const sampleAudit = createEmptyAudit(sampleCode);
   sampleAudit.name = "Auditoría integral 2025";
+  sampleAudit.description = "Plan integral de auditoría financiera 2025"; // added
   sampleAudit.participants = [
     { id: uuid(), name: "Ana Torres", email: "ana.torres@empresa.com", role: "auditor_lider" },
     { id: uuid(), name: "Luis Pérez", email: "luis.perez@empresa.com", role: "auditor" },
@@ -1844,33 +1839,60 @@ function renderAll() {
   renderCalendar();
 }
 
-// Setup help button in tab bar
+// Setup help TOC toggle and help section activation
 window.addEventListener("DOMContentLoaded", () => {
-  const helpBtn = $("#help-button");
-  const helpBackdrop = $("#help-modal-backdrop");
-  const helpCloseBtn = $("#help-close-btn");
+  const tocToggle = document.querySelector(".help-toc-toggle");
+  const tocList = document.querySelector(".help-toc-list");
+  const tocLinks = document.querySelectorAll(".help-toc-link");
 
-  if (helpBtn && helpBackdrop && helpCloseBtn) {
-    helpBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      helpBackdrop.classList.remove("hidden");
+  if (tocToggle && tocList) {
+    tocToggle.addEventListener("click", () => {
+      tocList.classList.toggle("hidden");
     });
 
-    helpCloseBtn.addEventListener("click", () => {
-      helpBackdrop.classList.add("hidden");
-    });
-
-    helpBackdrop.addEventListener("click", (e) => {
-      if (e.target === helpBackdrop) {
-        helpBackdrop.classList.add("hidden");
-      }
-    });
-
-    // Close on Escape key
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !helpBackdrop.classList.contains("hidden")) {
-        helpBackdrop.classList.add("hidden");
-      }
+    tocLinks.forEach(link => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const target = link.getAttribute("href");
+        const el = document.querySelector(target);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+          // Close TOC after selection
+          tocList.classList.add("hidden");
+        }
+      });
     });
   }
+
+  // Initialize help sections visibility
+  const helpLinks = document.querySelectorAll(".help-toc-link");
+  const helpSections = document.querySelectorAll(".help-section");
+
+  if (helpSections.length > 0) {
+    helpSections.forEach(s => s.classList.remove("active"));
+    helpSections[0].classList.add("active");
+  }
+  if (helpLinks.length > 0) {
+    helpLinks.forEach(l => l.classList.remove("active"));
+    helpLinks[0].classList.add("active");
+  }
+
+  helpLinks.forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const topicId = link.getAttribute("data-topic");
+      if (!topicId) return;
+
+      helpSections.forEach(section => section.classList.remove("active"));
+      helpLinks.forEach(l => l.classList.remove("active"));
+
+      const targetSection = document.getElementById(topicId);
+      if (targetSection) {
+        targetSection.classList.add("active");
+        link.classList.add("active");
+        const helpContent = document.querySelector(".help-content");
+        if (helpContent) helpContent.scrollTop = 0;
+      }
+    });
+  });
 });
