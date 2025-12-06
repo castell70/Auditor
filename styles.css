@@ -328,8 +328,8 @@ body {
 }
 
 .gantt-label {
-  width: 40%;
-  font-size: 11px;
+  width: 28%;
+  font-size: 12px;
   color: var(--text-main);
 }
 
@@ -739,16 +739,16 @@ body {
 }
 
 .gantt-label {
-  width: 35%;
-  font-size: 13px; /* ligeramente más grande para títulos */
+  width: 28%;
+  font-size: 12px; /* ligeramente ajustado para mantener legibilidad */
   color: var(--text-main);
 }
 
 .gantt-label-desc {
-  font-size: 12px; /* descripción más grande y legible */
+  font-size: 11px; /* descripción ligeramente reducida para ajustar espacio */
   color: var(--text-muted);
   line-height: 1.2;
-  max-height: 40px;
+  max-height: 36px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -759,8 +759,8 @@ body {
 .gantt-bar-area {
   flex: 1;
   position: relative;
-  /* Increase min-height so multiple activity rows can be visible; allow inner bars to position freely */
-  min-height: 36px;
+  /* Reducido para compactar verticalmente y permitir más filas visibles */
+  min-height: 28px;
   border-radius: 8px;
   background: #eeeeee;
   overflow: visible;
@@ -772,13 +772,13 @@ body {
 }
 
 .gantt-bar-stage {
-  top: 2px;
-  height: 20px;
+  top: 4px;
+  height: 16px;
   background: var(--orange-dark);
 }
 
 .gantt-bar-activity {
-  height: 12px; /* aumentado para mejor visibilidad */
+  height: 10px; /* reducido para más densidad cuando hay muchas actividades */
   background: #43a047;
   opacity: 0.95;
 }
