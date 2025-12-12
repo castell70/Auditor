@@ -682,8 +682,10 @@ body {
 }
 
 .modal {
-  width: 90%;
-  max-width: 360px;
+  width: 94%;
+  max-width: 1100px;
+  max-height: 96vh;
+  overflow: auto;
   background: var(--card-bg);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-soft);
@@ -1179,4 +1181,195 @@ body {
 /* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
+}
+
+/* Monitoreo: grid por etapas (3 columnas) */
+.monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+/* Columnas de etapa */
+.monitor-stage-column {
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+/* Header de cada etapa */
+.monitor-stage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.monitor-stage-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  max-width: calc(100% - 60px);
+}
+.monitor-stage-progress {
+  font-size: 13px;
+  font-weight: 800;
+  color: #43a047;
+  min-width: 46px;
+  text-align: right;
+}
+
+/* Lista de actividades dentro de cada columna */
+.monitor-activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.monitor-activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #fafafa;
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+/* Nombre a la izquierda, controles a la derecha */
+.monitor-activity-left {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.monitor-activity-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Controles: checkbox + input */
+.monitor-activity-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.monitor-percent-input {
+  width: 72px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  font-size: 13px;
+}
+.monitor-checkbox {
+  width: 18px;
+  height: 18px;
+}
+
+/* Canvas */
+#monitor-canvas {
+  display: block;
+  width: 100%;
+  height: 220px;
+}
+
+/* Responsive: en pantallas pequeñas apilar en 1 o 2 columnas */
+@media (max-width: 980px) {
+  .monitor-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 620px) {
+  .monitor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Style for the "Mostrar gráfica de avance" button in Monitoreo: soft orange and white text */
+#monitor-refresh {
+  background: #ffb74d; /* soft orange */
+  color: #ffffff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Dashboard de avance dentro del modal */
+.progress-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.progress-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.progress-summary-card {
+  background: #fff8e6;
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.progress-summary-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.progress-summary-value {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.progress-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.progress-chart-panel {
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-chart-canvas {
+  width: 100%;
+  height: 280px;
+  display: block;
+  border-radius: 6px;
+}
+
+/* Responsive: en pantallas estrechas apilar los gráficos */
+@media (max-width: 720px) {
+  .progress-charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-chart-canvas {
+    height: 260px;
+  }
 }

@@ -31,6 +31,7 @@
       <button class="tab-button" data-tab="etapas">Etapas</button>
       <button class="tab-button" data-tab="calendario">Calendario</button>
       <button class="tab-button" data-tab="diagrama">Diagrama</button>
+      <button class="tab-button" data-tab="monitoreo">Monitoreo</button>
       <button id="help-button" class="tab-button tab-button-help" data-tab="ayuda" title="Ayuda">?</button>
     </section>
 
@@ -51,12 +52,20 @@
           </div>
 
           <div class="card-section">
+            <label class="field-label">Empresa</label>
+            <input id="audit-company" class="field-input" type="text" placeholder="Ej. Empresa S.A." />
+          </div>
+          <div class="card-section">
             <label class="field-label">Nombre de auditoría</label>
             <input id="audit-name" class="field-input" type="text" placeholder="Ej. Auditoría financiera 2025" />
           </div>
           <div class="card-section">
             <label class="field-label">Descripción de la auditoría</label>
             <input id="audit-description" class="field-input" type="text" placeholder="Breve descripción de la auditoría (opcional)" />
+          </div>
+          <div class="card-section">
+            <label class="field-label">Fecha</label>
+            <input id="audit-date" class="field-input" type="date" />
           </div>
           <div class="card-section">
             <label class="field-label">Auditor líder</label>
@@ -187,6 +196,31 @@
       </div>
     </section>
 
+    <section class="tab-content" id="tab-monitoreo">
+      <div class="card scroll-card">
+        <div class="card-section">
+          <div class="card-header-row">
+            <span class="card-title">Monitoreo</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="card-section">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;">
+            <div class="small">Marca actividades en ejecución y actualiza % de avance; el avance de la etapa se calcula automáticamente como promedio de sus actividades.</div>
+            <button id="monitor-refresh" class="btn-chip">Actualizar gráfica</button>
+          </div>
+          <div id="monitor-grid-wrapper" style="margin-top:6px;">
+            <!-- Grid que contendrá columnas por etapa (3 columnas responsive) -->
+            <div id="monitor-grid" class="monitor-grid"></div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <canvas id="monitor-canvas" width="800" height="240" style="width:100%;max-height:280px;border:1px solid #eee;border-radius:8px;background:#fff;"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="tab-content" id="tab-ayuda">
       <div class="card scroll-card help-card">
         <div class="help-container">
@@ -200,6 +234,7 @@
               <li><a href="javascript:void(0)" data-topic="help-etapas" class="help-toc-link">📄 Etapas</a></li>
               <li><a href="javascript:void(0)" data-topic="help-calendario" class="help-toc-link">📅 Calendario</a></li>
               <li><a href="javascript:void(0)" data-topic="help-diagrama" class="help-toc-link">📊 Diagrama</a></li>
+              <li><a href="javascript:void(0)" data-topic="help-monitoreo" class="help-toc-link">📈 Monitoreo y Dashboard</a></li>
               <li><a href="javascript:void(0)" data-topic="help-example" class="help-toc-link">Ejemplo</a></li>
               <li><a href="javascript:void(0)" data-topic="help-tips" class="help-toc-link">Consejos</a></li>
             </ul>
@@ -379,7 +414,7 @@
                   <p style="margin: 0 0 6px 0; color: var(--text-muted);"><strong>Barras de etapas (naranja oscuro):</strong> Representan la duración completa de cada etapa.</p>
                   <p style="margin: 0; color: var(--text-muted);"><strong>Barras de actividades (verde):</strong> Representan tareas específicas; su posición y largo se derivan de las fechas ingresadas en el Calendario o en el editor de actividad.</p>
                 </div>
-
+                
                 <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
                   <p style="margin: 0 0 6px 0; font-weight: 600;">Lectura del diagrama</p>
                   <ul style="margin: 0; padding-left: 12px; font-size: 11px; line-height: 1.5;">
@@ -389,7 +424,7 @@
                     <li><strong>Posición:</strong> Indica el momento de inicio del elemento.</li>
                   </ul>
                 </div>
-
+                
                 <div style="background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5;">
                   <p style="margin: 0 0 6px 0; font-weight: 600;">Interpretación de patrones</p>
                   <ul style="margin: 0; padding-left: 12px; font-size: 11px; line-height: 1.5;">
@@ -402,6 +437,29 @@
 
               <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Exportar a PDF:</h4>
               <p style="margin: 0 0 8px 0; font-size: 11px; line-height: 1.5;">El botón "Descargar Informe en PDF" (naranja claro) genera un documento que incluye datos generales, participantes, etapas y el diagrama; puedes ingresar un nombre de archivo antes de descargar.</p>
+            </div>
+
+            <!-- Sección Monitoreo y Dashboard -->
+            <div class="help-section" id="help-monitoreo">
+              <h2 style="margin: 0 0 12px 0; color: var(--orange); font-size: 15px;">📈 Monitoreo y Dashboard</h2>
+              <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.5;">La vista de Monitoreo te permite marcar actividades como "en ejecución", ajustar su % de avance y abrir un Dashboard detallado con gráficas comparativas entre avance planificado y real.</p>
+              
+              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Controles principales:</h4>
+              <ul style="margin: 0; padding-left: 16px; font-size: 11px; line-height: 1.5;">
+                <li><strong>Checkbox de actividad:</strong> Marca la actividad como "en ejecución". Solo las actividades marcadas aparecen en la sección de "Actividades en ejecución" del Dashboard.</li>
+                <li><strong>Campo %:</strong> Indica el avance real de la actividad (0–100). Al editarlo se recalcula inmediatamente el % promedio de la etapa.</li>
+                <li><strong>Mostrar gráfica de avance:</strong> Abre un modal (Dashboard) con dos paneles: avance por etapa y actividades en ejecución; aquí verás barras planificadas vs reales y tarjetas resumen con promedios.</li>
+              </ul>
+
+              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Reglas y sugerencias:</h4>
+              <ul style="margin: 0; padding-left: 16px; font-size: 11px; line-height: 1.5;">
+                <li>El <strong>avance de etapa</strong> se calcula automáticamente como el promedio de los % de sus actividades; si una etapa no tiene actividades se usa su campo de avance (cuando exista).</li>
+                <li>El <strong>% planificado</strong> de una etapa o actividad se calcula por fechas: 0% antes del inicio, 100% después del fin y proporcional entre ambos.</li>
+                <li>En las gráficas del Dashboard el porcentaje planificado se oculta si llega a 100% para evitar textos que tapen la visual.</li>
+              </ul>
+
+              <h4 style="margin: 12px 0 8px 0; color: var(--text-main); font-size: 12px; font-weight: 600;">Exportar y compartir:</h4>
+              <p style="margin: 0 0 8px 0; font-size: 11px; line-height: 1.5;">Puedes capturar el Diagrama (Gantt) dentro del informe Word que genera la aplicación; si necesitas imágenes de las gráficas usa la funcionalidad "Mostrar gráfica de avance" y luego captura/exporta desde el modal (el sistema ya optimiza la captura para incluir en el informe).</p>
             </div>
 
             <!-- Sección Ejemplo -->

@@ -267,10 +267,17 @@ function openParticipantEditor(participant = {}, roles = []) {
 }
 
 function createEmptyAudit(code = "") {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  const todayStr = `${yyyy}-${mm}-${dd}`; // ISO date for <input type="date">
   return {
     code,
+    company: "",
     name: "",
     description: "", // added description field
+    date: todayStr,
     leadAuditorId: null,
     participants: [],
     stages: [],
@@ -315,6 +322,7 @@ const scheduleRender = debounce(() => {
   updateLeadAuditorOptions();
   updateSummary();
   renderCalendar();
+  renderMonitoring();
 }, 120);
 
 function setupTabs() {
@@ -333,8 +341,10 @@ function setupTabs() {
 // Auditoría básica
 function setupAuditBinding() {
   const codeInput = $("#audit-code");
+  const companyInput = $("#audit-company");
   const nameInput = $("#audit-name");
   const descriptionInput = $("#audit-description"); // new
+  const dateInput = $("#audit-date");
   const leadSel = $("#lead-auditor");
   const auditSelector = $("#audit-selector");
   const saveBtn = $("#save-audit");
@@ -345,12 +355,28 @@ function setupAuditBinding() {
   const current = getCurrentAudit();
   if (current) {
     codeInput.value = current.code;
+    companyInput.value = current.company || "";
     nameInput.value = current.name;
     if (descriptionInput) descriptionInput.value = current.description || "";
+    if (dateInput) dateInput.value = current.date || "";
+  } else {
+    // set default date value to today if no current audit
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    if (dateInput && !dateInput.value) dateInput.value = `${yyyy}-${mm}-${dd}`;
   }
 
   codeInput.addEventListener("input", () => {
     // Solo cambia el código en memoria, se consolida al guardar
+  });
+
+  companyInput && companyInput.addEventListener("input", () => {
+    const audit = getCurrentAudit();
+    if (!audit) return;
+    audit.company = companyInput.value.trim();
+    scheduleRender();
   });
 
   nameInput.addEventListener("input", () => {
@@ -367,6 +393,15 @@ function setupAuditBinding() {
       const audit = getCurrentAudit();
       if (!audit) return;
       audit.description = descriptionInput.value.trim();
+      scheduleRender();
+    });
+  }
+
+  if (dateInput) {
+    dateInput.addEventListener("change", () => {
+      const audit = getCurrentAudit();
+      if (!audit) return;
+      audit.date = dateInput.value || "";
       scheduleRender();
     });
   }
@@ -472,13 +507,17 @@ function setupAuditBinding() {
 function loadAuditIntoUI() {
   const audit = getCurrentAudit();
   const codeInput = $("#audit-code");
+  const companyInput = $("#audit-company");
   const nameInput = $("#audit-name");
   const descInput = $("#audit-description"); // new
+  const dateInput = $("#audit-date");
 
   if (!audit) {
     codeInput.value = "";
+    companyInput.value = "";
     nameInput.value = "";
     if (descInput) descInput.value = "";
+    if (dateInput) dateInput.value = "";
     $("#lead-auditor").value = "";
     $("#participants-list").innerHTML = "";
     $("#stages-list").innerHTML = "";
@@ -488,9 +527,10 @@ function loadAuditIntoUI() {
   }
 
   codeInput.value = audit.code || "";
+  companyInput.value = audit.company || "";
   nameInput.value = audit.name || "";
   if (descInput) descInput.value = audit.description || "";
-
+  if (dateInput) dateInput.value = audit.date || "";
   renderParticipants();
   updateLeadAuditorOptions();
   renderStages();
@@ -1461,10 +1501,10 @@ function renderGantt() {
     }
 
     // Barras de actividades (usar startDate / endDate)
-    (stage.activities || []).forEach((a, index) => {
-      if (!a.startDate || !a.endDate) return;
-      const aStart = new Date(a.startDate);
-      const aEnd = new Date(a.endDate);
+    (stage.activities || []).forEach((activity, index) => {
+      if (!activity.startDate || !activity.endDate) return;
+      const aStart = new Date(activity.startDate);
+      const aEnd = new Date(activity.endDate);
       if (isNaN(aStart) || isNaN(aEnd)) return;
       const startOffset = Math.max(0, Math.round((aStart - minStart) / msPerDay));
       const duration = Math.max(1, Math.round((aEnd - aStart) / msPerDay) + 1);
@@ -1476,8 +1516,8 @@ function renderGantt() {
       bar.style.left = `${(startOffset / totalDays) * 100}%`;
       bar.style.width = `${(duration / totalDays) * 100}%`;
 
-      const desc = a.description ? `Descripción: ${a.description}\n` : "";
-      bar.title = `${a.name} — ${a.startDate} → ${a.endDate}\n${desc}`.trim();
+      const desc = activity.description ? `Descripción: ${activity.description}\n` : "";
+      bar.title = `${activity.name} — ${activity.startDate} → ${activity.endDate}\n${desc}`.trim();
 
       barArea.appendChild(bar);
     });
@@ -1523,8 +1563,10 @@ async function generateWordReport(filename) {
   // Datos generales
   htmlParts.push('<div>');
   htmlParts.push(`<p class="small"><strong>Código:</strong> ${escapeHtml(audit ? (audit.code || "") : "")}</p>`);
+  htmlParts.push(`<p class="small"><strong>Empresa:</strong> ${escapeHtml(audit ? (audit.company || "") : "")}</p>`);
   htmlParts.push(`<p class="small"><strong>Nombre de auditoría:</strong> ${escapeHtml(audit ? (audit.name || "") : "")}</p>`);
   htmlParts.push(`<p class="small"><strong>Descripción:</strong> ${escapeHtml(audit ? (audit.description || "") : "")}</p>`);
+  htmlParts.push(`<p class="small"><strong>Fecha:</strong> ${escapeHtml(audit ? (audit.date ? formatDateDisplay(audit.date) : "") : "")}</p>`);
   const leaderName = (audit && audit.leadAuditorId) ? (audit.participants.find(p => p.id === audit.leadAuditorId)?.name || "") : "No asignado";
   htmlParts.push(`<p class="small"><strong>Auditor líder:</strong> ${escapeHtml(leaderName)}</p>`);
   htmlParts.push('</div>');
@@ -1598,7 +1640,7 @@ async function generateWordReport(filename) {
   // Cerrar body por ahora y añadiremos la imagen del Gantt dinámicamente
   htmlParts.push('</body></html>');
 
-  // Intentar capturar el Gantt como imagen y añadirla justo después del resumen (si existe)
+  // Intentar capturar el Gantt como imagen y añadirla justo después de cierre de body
   let finalHtml = htmlParts.join('');
 
   try {
@@ -1707,8 +1749,10 @@ function updateSummary() {
 function loadSampleData() {
   const sampleCode = "AUD-2025-01";
   const sampleAudit = createEmptyAudit(sampleCode);
+  sampleAudit.company = "Empresa Ejemplo S.A.";
   sampleAudit.name = "Auditoría integral 2025";
   sampleAudit.description = "Plan integral de auditoría financiera 2025"; // added
+  sampleAudit.date = "2025-01-10";
   sampleAudit.participants = [
     { id: uuid(), name: "Ana Torres", email: "ana.torres@empresa.com", role: "auditor_lider" },
     { id: uuid(), name: "Luis Pérez", email: "luis.perez@empresa.com", role: "auditor" },
@@ -1834,13 +1878,533 @@ function loadSampleData() {
   scheduleRender();
 }
 
-// Render global
+// --- MONITOREO: render y bindings --- //
+
+function renderMonitoring() {
+  const audit = getCurrentAudit();
+  const grid = document.getElementById("monitor-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  if (!audit || !audit.stages || audit.stages.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "list-sub";
+    empty.textContent = "No hay etapas definidas.";
+    grid.appendChild(empty);
+    drawMonitorChart([], { planned: [], actual: [] });
+    return;
+  }
+
+  // Preparar datos para gráfico global
+  const stageLabels = [];
+  const plannedPercents = [];
+  const actualPercents = [];
+
+  // Crear columnas: 3 columnas responsive (CSS grid)
+  audit.stages.forEach((s) => {
+    const col = document.createElement("div");
+    col.className = "monitor-stage-column";
+
+    const header = document.createElement("div");
+    header.className = "monitor-stage-header";
+    const title = document.createElement("div");
+    title.className = "monitor-stage-title";
+    title.textContent = s.name || "(sin nombre)";
+    const stageProgress = document.createElement("div");
+    stageProgress.className = "monitor-stage-progress";
+    stageProgress.textContent = `${computeStageProgress(s)}%`;
+
+    header.appendChild(title);
+    header.appendChild(stageProgress);
+    col.appendChild(header);
+
+    // Actividades
+    const acts = s.activities || [];
+    const actsWrapper = document.createElement("div");
+    actsWrapper.className = "monitor-activities-list";
+
+    if (acts.length === 0) {
+      const noAct = document.createElement("div");
+      noAct.className = "list-sub";
+      noAct.textContent = "Sin actividades";
+      actsWrapper.appendChild(noAct);
+    } else {
+      acts.forEach((a) => {
+        const item = document.createElement("div");
+        item.className = "monitor-activity-item";
+
+        const left = document.createElement("div");
+        left.className = "monitor-activity-left";
+        const name = document.createElement("div");
+        name.className = "monitor-activity-name";
+        name.textContent = a.name || "(sin nombre)";
+        left.appendChild(name);
+
+        const right = document.createElement("div");
+        right.className = "monitor-activity-right";
+
+        const chk = document.createElement("input");
+        chk.type = "checkbox";
+        chk.className = "monitor-checkbox";
+        chk.checked = !!a.executing;
+        chk.addEventListener("change", () => {
+          a.executing = chk.checked;
+          scheduleRender();
+        });
+
+        const percentInput = document.createElement("input");
+        percentInput.type = "number";
+        percentInput.min = 0;
+        percentInput.max = 100;
+        percentInput.value = (a.progress !== undefined) ? a.progress : 0;
+        percentInput.className = "monitor-percent-input";
+        percentInput.addEventListener("input", () => {
+          const v = parseInt(percentInput.value, 10);
+          a.progress = Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : 0;
+          // actualizar valor visible de la etapa
+          const newStageVal = computeStageProgress(s);
+          const headerProgress = col.querySelector(".monitor-stage-progress");
+          if (headerProgress) headerProgress.textContent = `${newStageVal}%`;
+          scheduleRender();
+        });
+
+        right.appendChild(chk);
+        right.appendChild(percentInput);
+
+        item.appendChild(left);
+        item.appendChild(right);
+        actsWrapper.appendChild(item);
+      });
+    }
+
+    col.appendChild(actsWrapper);
+    grid.appendChild(col);
+
+    // Datos para gráfico
+    stageLabels.push(s.name || "(sin nombre)");
+    plannedPercents.push(calculatePlannedPercentForStage(s));
+    actualPercents.push(computeStageProgress(s));
+  });
+
+  // Actualizar gráfico global
+  drawMonitorChart(stageLabels, { planned: plannedPercents, actual: actualPercents });
+}
+
+/**
+ * Calcula el % planificado de una etapa con base en fechas:
+ * - Antes de inicio => 0
+ * - Después de fin => 100
+ * - Entre => proporcional según hoy
+ * Si no hay fechas devuelve 0.
+ */
+function calculatePlannedPercentForStage(stage) {
+  if (!stage) return 0;
+  if (!stage.startDate || !stage.endDate) return 0;
+  const today = new Date();
+  const s = new Date(stage.startDate);
+  const e = new Date(stage.endDate);
+  if (isNaN(s) || isNaN(e) || e < s) return 0;
+  if (today <= s) return 0;
+  if (today >= e) return 100;
+  const total = e - s;
+  const elapsed = today - s;
+  return Math.round((elapsed / total) * 100);
+}
+
+/**
+ * Recalcula y devuelve el progreso de una etapa (promedio de actividades)
+ */
+function computeStageProgress(stage) {
+  const acts = stage.activities || [];
+  if (acts.length === 0) return stage.progress || 0;
+  const avg = Math.round(acts.reduce((acc, a) => acc + (a.progress || 0), 0) / acts.length);
+  return avg;
+}
+
+/**
+ * Dibuja una gráfica simple en canvas comparando planificado vs real por etapa.
+ * Uso un dibujo ligero en canvas para evitar dependencias externas.
+ */
+function drawMonitorChart(labels, series) {
+  const canvas = document.getElementById("monitor-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const DPR = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  canvas.width = Math.floor(width * DPR);
+  canvas.height = Math.floor(height * DPR);
+  ctx.scale(DPR, DPR);
+
+  // Limpiar
+  ctx.clearRect(0, 0, width, height);
+
+  // Config
+  const padding = { top: 24, right: 16, bottom: 40, left: 110 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+  const n = labels.length || 1;
+  const barH = Math.max(12, (chartH / (n * 1.6)));
+  const gap = Math.max(8, (chartH - n * barH) / Math.max(1, n - 1));
+
+  // Escala 0-100
+  ctx.font = "12px system-ui, sans-serif";
+  ctx.fillStyle = "#666";
+  ctx.textAlign = "right";
+  // Etiquetas de eje Y
+  labels.forEach((lab, i) => {
+    const y = padding.top + i * (barH + gap);
+    ctx.fillStyle = "#222";
+    ctx.textAlign = "right";
+    ctx.fillText(lab, padding.left - 12, y + barH / 2 + 4);
+  });
+
+  // Dibujar reglas horizontales (0,25,50,75,100)
+  ctx.strokeStyle = "rgba(0,0,0,0.06)";
+  ctx.lineWidth = 1;
+  for (let t = 0; t <= 4; t++) {
+    const x = padding.left + (chartW * (t / 4));
+    ctx.beginPath();
+    ctx.moveTo(x, padding.top - 6);
+    ctx.lineTo(x, padding.top + chartH + 6);
+    ctx.stroke();
+    ctx.fillStyle = "#999";
+    ctx.textAlign = "center";
+    ctx.fillText(String(t * 25), x, padding.top + chartH + 18);
+  }
+
+  // Dibujar barras: primero planificado (gris claro), luego real (verde)
+  labels.forEach((lab, i) => {
+    const y = padding.top + i * (barH + gap);
+    const planned = (series.planned && series.planned[i] !== undefined) ? series.planned[i] : 0;
+    const actual = (series.actual && series.actual[i] !== undefined) ? series.actual[i] : 0;
+
+    // planned bar (background)
+    ctx.fillStyle = "#e0e0e0";
+    const pw = Math.max(2, (chartW * (planned / 100)));
+    ctx.fillRect(padding.left, y, pw, barH);
+
+    // actual bar (overlay)
+    ctx.fillStyle = "#43a047";
+    const aw = Math.max(2, (chartW * (actual / 100)));
+    ctx.fillRect(padding.left, y + Math.round(barH * 0.15), aw, Math.round(barH * 0.7));
+
+    // Texto porcentajes (no mostrar el texto del plan si es 100% para evitar marca de agua)
+    ctx.fillStyle = "#222";
+    ctx.font = "11px system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`${actual}% real`, padding.left + chartW + 8, y + barH / 2 + 4);
+    // Mostrar porcentaje planificado solo si es distinto de 100
+    if ((planned ?? 0) !== 100) {
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#777";
+      ctx.fillText(`${planned}% plan`, padding.left + pw - 6, y + barH / 2 + 4);
+    }
+  });
+}
+
+/* Nuevo: mostrar modal con gráfica detallada de avance (etapas y actividades en ejecución) */
+async function showProgressModal() {
+  const audit = getCurrentAudit();
+  if (!audit) {
+    await openTextPrompt({ title: "Sin datos", message: "No hay auditoría cargada para mostrar la gráfica." });
+    return;
+  }
+
+  // Preparar datos para el dashboard
+  const stageLabels = [];
+  const stagePlanned = [];
+  const stageActual = [];
+  const activityLabels = [];
+  const activityPlanned = [];
+  const activityActual = [];
+
+  audit.stages.forEach((s) => {
+    const sName = s.name || "(sin nombre)";
+    // Datos por etapa (siempre visibles)
+    stageLabels.push(sName);
+    stagePlanned.push(calculatePlannedPercentForStage(s));
+    stageActual.push(computeStageProgress(s));
+
+    // Datos por actividades en ejecución
+    (s.activities || []).forEach((a) => {
+      if (!a.executing) return;
+      const aName = a.name || "(sin nombre)";
+      activityLabels.push(`${sName} — ${aName}`);
+      let p = 0;
+      if (a.startDate && a.endDate) {
+        p = calculatePlannedPercentForStage({ startDate: a.startDate, endDate: a.endDate });
+      }
+      activityPlanned.push(p);
+      activityActual.push(a.progress !== undefined ? a.progress : 0);
+    });
+  });
+
+  const totalStages = stageLabels.length;
+  const avgPlanned =
+    stagePlanned.length
+      ? Math.round(stagePlanned.reduce((a, b) => a + b, 0) / stagePlanned.length)
+      : 0;
+  const avgActual =
+    stageActual.length
+      ? Math.round(stageActual.reduce((a, b) => a + b, 0) / stageActual.length)
+      : 0;
+
+  const backdrop = $("#app-modal-backdrop");
+  const titleEl = $("#modal-title");
+  const msgEl = $("#modal-message");
+  const inputWrapper = $("#modal-input-wrapper");
+  const okBtn = $("#modal-ok");
+  const cancelBtn = $("#modal-cancel");
+
+  titleEl.textContent = "Dashboard de avance";
+  msgEl.textContent = "Visualiza el avance planificado y real por etapa y por actividades en ejecución.";
+  inputWrapper.classList.remove("hidden");
+  inputWrapper.innerHTML = "";
+
+  // Construir layout del dashboard
+  const dashboard = document.createElement("div");
+  dashboard.className = "progress-dashboard";
+
+  // Fila de tarjetas resumen
+  const summaryRow = document.createElement("div");
+  summaryRow.className = "progress-summary-row";
+
+  const card1 = document.createElement("div");
+  card1.className = "progress-summary-card";
+  card1.innerHTML = `
+    <div class="progress-summary-label">Etapas monitoreadas</div>
+    <div class="progress-summary-value">${totalStages}</div>
+  `;
+
+  const card2 = document.createElement("div");
+  card2.className = "progress-summary-card";
+  card2.innerHTML = `
+    <div class="progress-summary-label">% promedio planificado</div>
+    <div class="progress-summary-value">${avgPlanned}%</div>
+  `;
+
+  const card3 = document.createElement("div");
+  card3.className = "progress-summary-card";
+  card3.innerHTML = `
+    <div class="progress-summary-label">% promedio real</div>
+    <div class="progress-summary-value">${avgActual}%</div>
+  `;
+
+  summaryRow.appendChild(card1);
+  summaryRow.appendChild(card2);
+  summaryRow.appendChild(card3);
+  dashboard.appendChild(summaryRow);
+
+  // Zona de gráficos
+  const chartsGrid = document.createElement("div");
+  chartsGrid.className = "progress-charts-grid";
+
+  // Panel por etapas
+  const stagesPanel = document.createElement("div");
+  stagesPanel.className = "progress-chart-panel";
+  const stagesTitle = document.createElement("div");
+  stagesTitle.className = "progress-chart-title";
+  stagesTitle.textContent = "Avance por etapa";
+  const stagesSubtitle = document.createElement("div");
+  stagesSubtitle.className = "progress-chart-subtitle";
+  stagesSubtitle.textContent = "Comparación entre avance planificado y real del conjunto de etapas.";
+  const stagesCanvas = document.createElement("canvas");
+  stagesCanvas.id = "progress-modal-canvas-stages";
+  stagesCanvas.className = "progress-chart-canvas";
+  stagesPanel.appendChild(stagesTitle);
+  stagesPanel.appendChild(stagesSubtitle);
+  stagesPanel.appendChild(stagesCanvas);
+
+  // Panel por actividades en ejecución
+  const actsPanel = document.createElement("div");
+  actsPanel.className = "progress-chart-panel";
+  const actsTitle = document.createElement("div");
+  actsTitle.className = "progress-chart-title";
+  actsTitle.textContent = "Actividades en ejecución";
+  const actsSubtitle = document.createElement("div");
+  actsSubtitle.className = "progress-chart-subtitle";
+  actsSubtitle.textContent = activityLabels.length
+    ? "Detalle de avance real vs planificado de las actividades marcadas como en ejecución."
+    : "No hay actividades marcadas como en ejecución.";
+  const actsCanvas = document.createElement("canvas");
+  actsCanvas.id = "progress-modal-canvas-activities";
+  actsCanvas.className = "progress-chart-canvas";
+  actsPanel.appendChild(actsTitle);
+  actsPanel.appendChild(actsSubtitle);
+  actsPanel.appendChild(actsCanvas);
+
+  chartsGrid.appendChild(stagesPanel);
+  chartsGrid.appendChild(actsPanel);
+  dashboard.appendChild(chartsGrid);
+
+  inputWrapper.appendChild(dashboard);
+
+  // Mostrar modal
+  backdrop.classList.remove("hidden");
+
+  // Ajustar botones: solo "Cerrar"
+  okBtn.textContent = "Cerrar";
+  cancelBtn.classList.add("hidden");
+
+  // Dibujar gráficos cuando el layout esté listo
+  setTimeout(() => {
+    const stageSeries = { planned: stagePlanned, actual: stageActual };
+    drawProgressModalChart(stagesCanvas, stageLabels, stageSeries);
+
+    const activitySeries = { planned: activityPlanned, actual: activityActual };
+    drawProgressModalChart(actsCanvas, activityLabels, activitySeries);
+  }, 0);
+
+  return new Promise((resolve) => {
+    const close = () => {
+      backdrop.classList.add("hidden");
+      inputWrapper.classList.add("hidden");
+      inputWrapper.innerHTML = "";
+      okBtn.textContent = "Aceptar";
+      cancelBtn.classList.remove("hidden");
+      okBtn.removeEventListener("click", close);
+      resolve();
+    };
+    okBtn.addEventListener("click", close);
+  });
+}
+
+/* Dibuja la gráfica dentro del modal (similar a drawMonitorChart pero adaptada) */
+function drawProgressModalChart(canvas, labels, series) {
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const DPR = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth || 560;
+  const height = canvas.clientHeight || 320;
+  canvas.width = Math.floor(width * DPR);
+  canvas.height = Math.floor(height * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  // Limpiar
+  ctx.clearRect(0, 0, width, height);
+
+  if (!labels || labels.length === 0) {
+    ctx.fillStyle = "#777";
+    ctx.font = "12px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Sin datos para mostrar", width / 2, height / 2);
+    return;
+  }
+
+  // Configuración
+  const padding = { top: 32, right: 16, bottom: 40, left: 180 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+  const n = Math.max(1, labels.length);
+  const barH = Math.max(10, Math.floor(chartH / (n * 1.6)));
+  const gap = Math.max(6, Math.floor((chartH - n * barH) / Math.max(1, n - 1)));
+
+  ctx.font = "12px system-ui, sans-serif";
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#333";
+
+  // Etiquetas de eje Y (nombres largos en hasta dos filas)
+  labels.forEach((lab, i) => {
+    const yBase = padding.top + i * (barH + gap);
+    ctx.fillStyle = "#222";
+    ctx.textAlign = "right";
+
+    let text = lab || "";
+    const maxCharsPerLine = 34;
+    let line1 = "";
+    let line2 = "";
+
+    if (text.length <= maxCharsPerLine) {
+      line1 = text;
+    } else {
+      // intentar cortar en espacio cercano
+      const slice1 = text.slice(0, maxCharsPerLine);
+      const lastSpace = slice1.lastIndexOf(" ");
+      if (lastSpace > 10) {
+        line1 = slice1.slice(0, lastSpace);
+        line2 = text.slice(lastSpace + 1);
+      } else {
+        line1 = slice1;
+        line2 = text.slice(maxCharsPerLine);
+      }
+      if (line2.length > maxCharsPerLine) {
+        line2 = line2.slice(0, maxCharsPerLine - 3) + "...";
+      }
+    }
+
+    const centerY = yBase + barH / 2;
+    if (line2) {
+      ctx.fillText(line1, padding.left - 12, centerY - 4);
+      ctx.fillText(line2, padding.left - 12, centerY + 10);
+    } else {
+      ctx.fillText(line1, padding.left - 12, centerY + 3);
+    }
+  });
+
+  // Reglas verticales y escala 0-100
+  ctx.strokeStyle = "rgba(0,0,0,0.06)";
+  ctx.lineWidth = 1;
+  for (let t = 0; t <= 4; t++) {
+    const x = padding.left + (chartW * (t / 4));
+    ctx.beginPath();
+    ctx.moveTo(x, padding.top - 6);
+    ctx.lineTo(x, padding.top + chartH + 6);
+    ctx.stroke();
+    ctx.fillStyle = "#999";
+    ctx.textAlign = "center";
+    ctx.fillText(String(t * 25), x, padding.top + chartH + 18);
+  }
+
+  // Dibujar barras: planned (gris) detrás, actual (verde) delante
+  labels.forEach((lab, i) => {
+    const y = padding.top + i * (barH + gap);
+    const p = (series.planned && series.planned[i] !== undefined) ? series.planned[i] : 0;
+    const a = (series.actual && series.actual[i] !== undefined) ? series.actual[i] : 0;
+
+    // planned
+    ctx.fillStyle = "#e0e0e0";
+    const pw = Math.max(2, Math.round(chartW * (Math.max(0, Math.min(100, p)) / 100)));
+    ctx.fillRect(padding.left, y, pw, barH);
+
+    // actual
+    ctx.fillStyle = "#43a047";
+    const aw = Math.max(2, Math.round(chartW * (Math.max(0, Math.min(100, a)) / 100)));
+    ctx.fillRect(padding.left, y + Math.round(barH * 0.15), aw, Math.round(barH * 0.7));
+
+    // Texto porcentajes al final de barra (ocultar porcentaje planificado cuando es 100%)
+    ctx.fillStyle = "#222";
+    ctx.font = "11px system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`${a}%`, padding.left + Math.min(chartW - 24, aw) + 8, y + barH / 2 + 4);
+    if ((p ?? 0) !== 100) {
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#777";
+      ctx.fillText(`${p}%`, padding.left + pw - 6, y + barH / 2 + 4);
+    }
+  });
+}
+
+// Hook para refrescar gráfica manualmente
+window.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("monitor-refresh");
+  if (btn) {
+    // cambiar texto del botón
+    btn.textContent = "Mostrar gráfica de avance";
+    btn.addEventListener("click", () => {
+      showProgressModal();
+    });
+  }
+});
+
+// Asegurar que renderMonitoring exista y se llame en renderAll
 function renderAll() {
   renderParticipants();
   renderStages();
   updateLeadAuditorOptions();
   updateSummary();
   renderCalendar();
+  renderMonitoring();
 }
 
 // Setup help TOC toggle and help section activation (single, cleaned listener)
