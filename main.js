@@ -1880,6 +1880,33 @@ function loadSampleData() {
 
 // --- MONITOREO: render y bindings --- //
 
+/* Helpers to show/remove a persistent warning box inside Monitoreo when a stage is forced to 100% while a previous stage is not complete */
+function showMonitorWarning(prevStageName, nextStageName) {
+  const wrapper = document.getElementById("monitor-grid-wrapper");
+  if (!wrapper) return;
+  // Avoid duplicating
+  let box = document.getElementById("monitor-warning-box");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "monitor-warning-box";
+    box.style.background = "#fff3e0";
+    box.style.border = "1px solid rgba(245,124,0,0.3)";
+    box.style.color = "#6b3b00";
+    box.style.padding = "10px";
+    box.style.borderRadius = "8px";
+    box.style.margin = "6px 0 10px 0";
+    box.style.fontSize = "13px";
+    box.style.boxShadow = "0 2px 6px rgba(0,0,0,0.03)";
+    wrapper.insertBefore(box, wrapper.firstChild);
+  }
+  box.textContent = `Advertencia: La etapa anterior "${prevStageName}" tiene un porcentaje menor a la siguiente etapa "${nextStageName}". Revisa la secuencia de avance.`;
+}
+
+function removeMonitorWarning() {
+  const box = document.getElementById("monitor-warning-box");
+  if (box && box.parentNode) box.parentNode.removeChild(box);
+}
+
 function renderMonitoring() {
   const audit = getCurrentAudit();
   const grid = document.getElementById("monitor-grid");
@@ -1891,7 +1918,8 @@ function renderMonitoring() {
     empty.className = "list-sub";
     empty.textContent = "No hay etapas definidas.";
     grid.appendChild(empty);
-    drawMonitorChart([], { planned: [], actual: [] });
+    // gráfica redundante eliminada: no se dibuja canvas aquí
+    removeMonitorWarning();
     return;
   }
 
@@ -1958,14 +1986,73 @@ function renderMonitoring() {
         percentInput.max = 100;
         percentInput.value = (a.progress !== undefined) ? a.progress : 0;
         percentInput.className = "monitor-percent-input";
+        // Update model and local UI without triggering a full re-render to avoid losing focus/caret
         percentInput.addEventListener("input", () => {
-          const v = parseInt(percentInput.value, 10);
-          a.progress = Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : 0;
-          // actualizar valor visible de la etapa
+          const raw = percentInput.value;
+          const v = parseInt(raw, 10);
+
+          // Normalize and clamp value; reflect clamped value back into the input so the cursor stays consistent with the model
+          let normalized = Number.isFinite(v) ? v : 0;
+          if (normalized > 100) normalized = 100;
+          if (normalized < 0) normalized = 0;
+
+          // If user typed a value beyond limits, update the visible input immediately
+          if (String(percentInput.value) !== String(normalized)) {
+            percentInput.value = String(normalized);
+          }
+
+          a.progress = normalized;
+
+          // Update stage progress label locally
           const newStageVal = computeStageProgress(s);
           const headerProgress = col.querySelector(".monitor-stage-progress");
           if (headerProgress) headerProgress.textContent = `${newStageVal}%`;
-          scheduleRender();
+
+          // After updating, perform global checks for sequencing rules
+          try {
+            const auditNow = getCurrentAudit();
+            // Recompute actuals for all stages
+            const reActuals = (auditNow.stages || []).map(st => computeStageProgress(st));
+            // Check for any pair where current is 100 and previous <100 OR where next stage has greater percent than previous
+            let offender = null;
+            for (let i = 1; i < reActuals.length; i++) {
+              const prev = reActuals[i - 1];
+              const cur = reActuals[i];
+              if (cur === 100 && prev < 100) {
+                offender = { type: "complete-after-incomplete", prevIndex: i - 1, curIndex: i };
+                break;
+              }
+              if (cur > prev) {
+                offender = { type: "next-greater-than-prev", prevIndex: i - 1, curIndex: i };
+                break;
+              }
+            }
+            if (offender) {
+              const prevStage = auditNow.stages[offender.prevIndex];
+              const curStage = auditNow.stages[offender.curIndex];
+              showMonitorWarning(prevStage.name || "(sin nombre)", curStage.name || "(sin nombre)");
+            } else {
+              removeMonitorWarning();
+            }
+          } catch (w) {
+            // ignore
+          }
+
+          // If there's an existing monitor canvas, attempt to redraw the chart (non-blocking)
+          try {
+            const stageLabels = Array.from(document.querySelectorAll(".monitor-stage-title")).map(el => el.textContent);
+            const planned = stageLabels.map((_, i) => {
+              const st = (getCurrentAudit().stages && getCurrentAudit().stages[i]) || {};
+              return calculatePlannedPercentForStage(st);
+            });
+            const actual = Array.from(document.querySelectorAll(".monitor-stage-progress")).map(el => {
+              const txt = String(el.textContent || "0").replace("%", "");
+              return parseInt(txt, 10) || 0;
+            });
+            drawMonitorChart(stageLabels, { planned: planned, actual: actual });
+          } catch (e) {
+            // ignore drawing errors to keep input responsive
+          }
         });
 
         right.appendChild(chk);
@@ -1985,6 +2072,32 @@ function renderMonitoring() {
     plannedPercents.push(calculatePlannedPercentForStage(s));
     actualPercents.push(computeStageProgress(s));
   });
+
+  // Evaluate sequence rules across all stages and show/remove warning as needed
+  try {
+    let offender = null;
+    for (let i = 1; i < actualPercents.length; i++) {
+      const prev = actualPercents[i - 1];
+      const cur = actualPercents[i];
+      if (cur === 100 && prev < 100) {
+        offender = { type: "complete-after-incomplete", prevIndex: i - 1, curIndex: i };
+        break;
+      }
+      if (cur > prev) {
+        offender = { type: "next-greater-than-prev", prevIndex: i - 1, curIndex: i };
+        break;
+      }
+    }
+    if (offender) {
+      const prevStage = audit.stages[offender.prevIndex];
+      const curStage = audit.stages[offender.curIndex];
+      showMonitorWarning(prevStage.name || "(sin nombre)", curStage.name || "(sin nombre)");
+    } else {
+      removeMonitorWarning();
+    }
+  } catch (e) {
+    // ignore
+  }
 
   // Actualizar gráfico global
   drawMonitorChart(stageLabels, { planned: plannedPercents, actual: actualPercents });
@@ -2157,7 +2270,27 @@ async function showProgressModal() {
   const okBtn = $("#modal-ok");
   const cancelBtn = $("#modal-cancel");
 
-  titleEl.textContent = "Dashboard de avance";
+  titleEl.innerHTML = "";
+  // Title + audit code and company below with a small spacer
+  const dashboardTitle = document.createElement("div");
+  dashboardTitle.textContent = "Dashboard de avance";
+  dashboardTitle.style.fontWeight = "700";
+  dashboardTitle.style.fontSize = "15px";
+
+  const spacer = document.createElement("div");
+  spacer.style.height = "8px";
+
+  const infoLine = document.createElement("div");
+  infoLine.style.fontSize = "12px";
+  infoLine.style.color = "var(--text-muted)";
+  const codeText = (audit && audit.code) ? audit.code : "";
+  const companyText = (audit && audit.company) ? audit.company : "";
+  infoLine.textContent = `${codeText}${codeText && companyText ? " — " : ""}${companyText}`;
+
+  titleEl.appendChild(dashboardTitle);
+  titleEl.appendChild(spacer);
+  titleEl.appendChild(infoLine);
+
   msgEl.textContent = "Visualiza el avance planificado y real por etapa y por actividades en ejecución.";
   inputWrapper.classList.remove("hidden");
   inputWrapper.innerHTML = "";
@@ -2406,60 +2539,6 @@ function renderAll() {
   renderCalendar();
   renderMonitoring();
 }
-
-// Setup help TOC toggle and help section activation (single, cleaned listener)
-window.addEventListener("DOMContentLoaded", () => {
-  const tocList = document.querySelector(".help-toc-list");
-  const tocLinks = document.querySelectorAll(".help-toc-link");
-
-  // Initialize help sections visibility
-  const helpLinks = document.querySelectorAll(".help-toc-link");
-  const helpSections = document.querySelectorAll(".help-section");
-
-  if (helpSections.length > 0) {
-    helpSections.forEach(s => s.classList.remove("active"));
-    helpSections[0].classList.add("active");
-  }
-  if (helpLinks.length > 0) {
-    helpLinks.forEach(l => l.classList.remove("active"));
-    helpLinks[0].classList.add("active");
-  }
-
-  // Wire up TOC links (use data-topic consistently)
-  helpLinks.forEach(link => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      const topicId = link.getAttribute("data-topic");
-      if (!topicId) return;
-
-      helpSections.forEach(section => section.classList.remove("active"));
-      helpLinks.forEach(l => l.classList.remove("active"));
-
-      const targetSection = document.getElementById(topicId);
-      if (targetSection) {
-        targetSection.classList.add("active");
-        link.classList.add("active");
-        const helpContent = document.querySelector(".help-content");
-        if (helpContent) helpContent.scrollTop = 0;
-      }
-    });
-  });
-
-  // Allow the TOC to be toggled via optional toggle button if present
-  const tocToggle = document.querySelector(".help-toc-toggle");
-  if (tocToggle && tocList) {
-    tocToggle.addEventListener("click", () => {
-      tocList.classList.toggle("hidden");
-    });
-  }
-});
-
-/* Fix modal confirm button text restoration: ensure openConfirmDialog resets button labels after close.
-   (We restore default strings when closing) */
-// ... existing code ...
-
-/* Previously there was a duplicated DOMContentLoaded help-initializer here that used href-based targets
-   and could cause inconsistent behavior — it has been removed to avoid conflicts. */
 
 // Setup help TOC toggle and help section activation (single, cleaned listener)
 window.addEventListener("DOMContentLoaded", () => {
